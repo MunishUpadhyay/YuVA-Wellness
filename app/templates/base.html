@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}YuVA Wellness - Your Mental Health Companion{% endblock %}</title>
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="/components/shared/base_styles.css">
+    
+    <!-- UI Enhancement Scripts -->
+    <script src="/static/ui-enhancements.js" defer></script>
+    <script src="/components/shared/utils.js" defer></script>
+    <script src="/components/shared/navigation.js" defer></script>
+    
+    <!-- Meta tags for SEO and social sharing -->
+    <meta name="description" content="YuVA Wellness - Your AI-powered mental health companion. Track moods, journal thoughts, and get personalized insights for better mental wellness.">
+    <meta name="keywords" content="mental health, wellness, AI, mood tracking, journal, therapy, self-care">
+    <meta name="author" content="YuVA Wellness">
+    
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="YuVA Wellness - Your Mental Health Companion">
+    <meta property="og:description" content="Track your mental wellness journey with AI-powered insights and personalized recommendations.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:8000">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#6c5ce7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="YuVA Wellness">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="/" class="brand">
+                <i class="fas fa-brain"></i>
+                YuVA Wellness
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="/" class="{% if request.url.path == '/' %}active{% endif %}">
+                    <i class="fas fa-home"></i> Home
+                </a></li>
+                <li><a href="/chat" class="{% if request.url.path == '/chat' %}active{% endif %}">
+                    <i class="fas fa-comments"></i> Chat
+                </a></li>
+                <li><a href="/journal" class="{% if request.url.path == '/journal' %}active{% endif %}">
+                    <i class="fas fa-book"></i> Journal
+                </a></li>
+                <li><a href="/mood" class="{% if request.url.path == '/mood' %}active{% endif %}">
+                    <i class="fas fa-heart"></i> Mood
+                </a></li>
+                <li><a href="/analytics" class="{% if request.url.path == '/analytics' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i> Analytics
+                </a></li>
+                <li><a href="/dashboard" class="{% if request.url.path == '/dashboard' %}active{% endif %}">
+                    <i class="fas fa-brain"></i> AI Dashboard
+                </a></li>
+                <li><a href="/resources" class="{% if request.url.path == '/resources' %}active{% endif %}">
+                    <i class="fas fa-bookmark"></i> Resources
+                </a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer style="background: var(--bg-secondary); padding: var(--spacing-lg) 0; margin-top: var(--spacing-xl); border-top: 1px solid var(--border-color);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 var(--spacing-md); text-align: center;">
+            <p style="color: var(--text-muted); margin-bottom: var(--spacing-sm);">
+                <i class="fas fa-heart" style="color: #f5576c;"></i>
+                Made with care for your mental wellness
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                © 2026 YuVA Wellness. Your mental health matters.
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <!-- JavaScript -->
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js')
+                .then((registration) => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch((registrationError) => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+        }
+    </script>
+            }
+        });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

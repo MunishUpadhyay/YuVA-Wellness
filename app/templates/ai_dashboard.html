@@ -1,0 +1,613 @@
+{% extends "base.html" %}
+{% block title %}AI Dashboard - YuVA Wellness{% endblock %}
+
+{% block extra_head %}
+<script src="/components/dashboard/ai-widgets.js" defer></script>
+<script src="/components/dashboard/mindfulness-modal.js" defer></script>
+<style>
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+}
+
+.ai-widget {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-widget::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+
+.ai-widget:hover::before {
+    transform: scaleX(1);
+}
+
+.ai-widget:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.widget-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.widget-icon {
+    font-size: 1.5rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.widget-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.widget-content {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.loading-widget {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    color: var(--text-muted);
+}
+
+.insight-card {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+    border-left: 4px solid var(--primary);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: var(--spacing-sm) 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    transition: width 1s ease;
+}
+
+.action-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    margin: var(--spacing-xs) 0;
+    transition: var(--transition);
+}
+
+.action-item:hover {
+    background: var(--bg-tertiary);
+    transform: translateX(5px);
+}
+
+.action-icon {
+    font-size: 1.2rem;
+}
+
+.refresh-btn {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.refresh-btn:hover {
+    color: var(--primary);
+    background: var(--bg-secondary);
+}
+
+.affirmation-text {
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--text-primary);
+    text-align: center;
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--success);
+}
+
+.exercise-steps {
+    background: var(--bg-secondary);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    margin: var(--spacing-sm) 0;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    /* Mobile adjustments for Quick AI Actions */
+    .btn-analyze-journal,
+    .btn-wellness-plan,
+    .btn-mindfulness,
+    .btn-chat-starters {
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 0.95rem;
+        min-height: 50px;
+    }
+    
+    .btn-analyze-journal i,
+    .btn-wellness-plan i,
+    .btn-mindfulness i,
+    .btn-chat-starters i {
+        margin-right: var(--spacing-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    /* Very small screens */
+    .btn-analyze-journal,
+    .btn-wellness-plan,
+    .btn-mindfulness,
+    .btn-chat-starters {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 0.9rem;
+        min-height: 45px;
+    }
+}
+
+/* Enhanced button loading states */
+.btn-loading {
+    background: var(--warning) !important;
+    color: var(--bg-primary) !important;
+    border-color: var(--warning) !important;
+    opacity: 0.8;
+    cursor: not-allowed;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Quick AI Actions Button Styles */
+.btn-analyze-journal {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: var(--transition);
+}
+
+.btn-analyze-journal:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-wellness-plan {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    transition: var(--transition);
+}
+
+.btn-wellness-plan:hover {
+    background: linear-gradient(135deg, #ee7ff0 0%, #f3435a 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(240, 147, 251, 0.4);
+}
+
+.btn-mindfulness {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    transition: var(--transition);
+}
+
+.btn-mindfulness:hover {
+    background: linear-gradient(135deg, #3d9afc 0%, #00e0fc 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}
+
+.btn-chat-starters {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #2d3748;
+    border: none;
+    box-shadow: 0 4px 15px rgba(252, 182, 159, 0.3);
+    transition: var(--transition);
+}
+
+.btn-chat-starters:hover {
+    background: linear-gradient(135deg, #fde2c0 0%, #faa58d 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(252, 182, 159, 0.4);
+}
+
+/* Loading states for each button type */
+.btn-analyze-journal.btn-loading {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    opacity: 0.8;
+}
+
+.btn-wellness-plan.btn-loading {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+    opacity: 0.8;
+}
+
+.btn-mindfulness.btn-loading {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    opacity: 0.8;
+}
+
+.btn-chat-starters.btn-loading {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+    opacity: 0.8;
+}
+
+/* Enhanced focus states for accessibility */
+.btn-analyze-journal:focus,
+.btn-wellness-plan:focus,
+.btn-mindfulness:focus,
+.btn-chat-starters:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* Active states */
+.btn-analyze-journal:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.btn-wellness-plan:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.btn-mindfulness:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.btn-chat-starters:active {
+    transform: translateY(-1px) scale(0.98);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="text-align: center; margin-bottom: var(--spacing-xl);">
+    <h1 style="font-size: 2.5rem; margin-bottom: var(--spacing-sm); background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        <i class="fas fa-brain"></i> AI Wellness Dashboard
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 1.1rem;">
+        Your personalized AI-powered insights and recommendations for better mental wellness
+    </p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Daily Insights Widget -->
+    <div class="ai-widget" id="daily-insights-widget">
+        <button class="refresh-btn" onclick="refreshWidget('daily-insights')">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="widget-header">
+            <span class="widget-icon">🧠</span>
+            <h3 class="widget-title">Daily AI Insights</h3>
+        </div>
+        <div class="widget-content" id="daily-insights-content">
+            <div class="loading-widget">
+                <i class="fas fa-spinner fa-spin"></i> Generating personalized insights...
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Summary Widget -->
+    <div class="ai-widget" id="progress-widget">
+        <button class="refresh-btn" onclick="refreshWidget('progress')">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="widget-header">
+            <span class="widget-icon">📈</span>
+            <h3 class="widget-title">Your Progress</h3>
+        </div>
+        <div class="widget-content" id="progress-content">
+            <div class="loading-widget">
+                <i class="fas fa-spinner fa-spin"></i> Analyzing your progress...
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Affirmation Widget -->
+    <div class="ai-widget" id="affirmation-widget">
+        <button class="refresh-btn" onclick="refreshWidget('affirmation')">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="widget-header">
+            <span class="widget-icon">💫</span>
+            <h3 class="widget-title">Daily Affirmation</h3>
+        </div>
+        <div class="widget-content" id="affirmation-content">
+            <div class="loading-widget">
+                <i class="fas fa-spinner fa-spin"></i> Creating your affirmation...
+            </div>
+        </div>
+    </div>
+
+    <!-- Wellness Tip Widget -->
+    <div class="ai-widget" id="wellness-tip-widget">
+        <button class="refresh-btn" onclick="refreshWidget('wellness-tip')">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="widget-header">
+            <span class="widget-icon">💡</span>
+            <h3 class="widget-title">Wellness Tip</h3>
+        </div>
+        <div class="widget-content" id="wellness-tip-content">
+            <div class="loading-widget">
+                <i class="fas fa-spinner fa-spin"></i> Generating wellness tip...
+            </div>
+        </div>
+    </div>
+
+    <!-- Mindfulness Exercise Widget -->
+    <div class="ai-widget" id="mindfulness-widget">
+        <button class="refresh-btn" onclick="refreshWidget('mindfulness')">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="widget-header">
+            <span class="widget-icon">🧘</span>
+            <h3 class="widget-title">Mindfulness Exercise</h3>
+        </div>
+        <div class="widget-content" id="mindfulness-content">
+            <div class="loading-widget">
+                <i class="fas fa-spinner fa-spin"></i> Preparing mindfulness exercise...
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Suggestions Widget -->
+    <div class="ai-widget" id="suggestions-widget">
+        <button class="refresh-btn" onclick="refreshWidget('suggestions')">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <div class="widget-header">
+            <span class="widget-icon">🎯</span>
+            <h3 class="widget-title">Smart Suggestions</h3>
+        </div>
+        <div class="widget-content" id="suggestions-content">
+            <div class="loading-widget">
+                <i class="fas fa-spinner fa-spin"></i> Analyzing patterns for suggestions...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card" style="margin-top: var(--spacing-xl);">
+    <h3 style="margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm);">
+        <i class="fas fa-bolt" style="color: var(--primary);"></i>
+        Quick AI Actions
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-md);">
+        <button class="btn btn-analyze-journal" onclick="analyzeJournal()">
+            <i class="fas fa-search"></i> Analyze Journal
+        </button>
+        <button class="btn btn-wellness-plan" onclick="getWellnessPlan()">
+            <i class="fas fa-clipboard-list"></i> Get Wellness Plan
+        </button>
+        <button class="btn btn-mindfulness" onclick="startMindfulness()">
+            <i class="fas fa-leaf"></i> Start Mindfulness
+        </button>
+        <button class="btn btn-chat-starters" onclick="getChatStarters()">
+            <i class="fas fa-comments"></i> Chat Starters
+        </button>
+    </div>
+</div>
+
+<script>
+// Initialize dashboard using components
+document.addEventListener('DOMContentLoaded', () => {
+    new AIDashboardWidgets();
+});
+
+function startMindfulness() {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    const originalClass = button.className;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
+    button.className = originalClass + ' btn-loading';
+    button.disabled = true;
+    
+    // Simulate loading time for mindfulness preparation
+    setTimeout(() => {
+        const mindfulnessExercise = `🧘 Mindfulness Exercise: 5-Minute Breathing
+
+🌟 Find a comfortable position and close your eyes.
+
+🫁 Steps:
+1. Take a deep breath in for 4 counts
+2. Hold your breath for 4 counts  
+3. Exhale slowly for 6 counts
+4. Repeat this cycle 10 times
+
+💫 Focus only on your breathing. When your mind wanders, gently bring attention back to your breath.
+
+🎯 This exercise helps reduce stress and increase present-moment awareness.`;
+        
+        alert(mindfulnessExercise);
+        
+        // Reset button
+        button.innerHTML = originalContent;
+        button.className = originalClass;
+        button.disabled = false;
+    }, 1500); // Simulate loading time
+}
+
+function analyzeJournal() {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    const originalClass = button.className;
+    
+    const text = prompt("Enter some text to analyze:");
+    if (text) {
+        // Show loading state
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+        button.className = originalClass + ' btn-loading';
+        button.disabled = true;
+        
+        fetch('/api/ai/analyze-journal', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: text})
+        })
+        .then(response => response.json())
+        .then(data => {
+            const analysis = data.analysis;
+            const resultDisplay = `📊 Journal Analysis Results
+
+🎭 Sentiment: ${analysis.sentiment}
+💭 Message: ${analysis.message}
+
+✨ This analysis helps you understand the emotional tone of your writing.`;
+            
+            alert(resultDisplay);
+        })
+        .catch(error => {
+            alert('Failed to analyze journal entry. Please try again.');
+        })
+        .finally(() => {
+            // Reset button
+            button.innerHTML = originalContent;
+            button.className = originalClass;
+            button.disabled = false;
+        });
+    }
+}
+
+function getWellnessPlan() {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    const originalClass = button.className;
+    
+    // Show loading state with enhanced styling
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading Plan...';
+    button.className = originalClass + ' btn-loading';
+    button.disabled = true;
+    
+    fetch('/api/ai/wellness-plan')
+        .then(response => response.json())
+        .then(data => {
+            const plan = data.wellness_plan;
+            
+            // Create a more attractive display
+            const planDisplay = `🎯 Your Personalized Wellness Plan
+
+📅 Daily Goals:
+${plan.daily_goals.map(goal => `• ${goal}`).join('\n')}
+
+📊 Weekly Goals:
+${plan.weekly_goals.map(goal => `• ${goal}`).join('\n')}
+
+💡 This plan is tailored to your current wellness patterns and mood trends.`;
+            
+            alert(planDisplay);
+        })
+        .catch(error => {
+            alert('Failed to get wellness plan. Please try again.');
+        })
+        .finally(() => {
+            // Reset button
+            button.innerHTML = originalContent;
+            button.className = originalClass;
+            button.disabled = false;
+        });
+}
+
+function getChatStarters() {
+    const button = event.target.closest('button');
+    const originalContent = button.innerHTML;
+    const originalClass = button.className;
+    
+    // Show loading state
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading Starters...';
+    button.className = originalClass + ' btn-loading';
+    button.disabled = true;
+    
+    fetch('/api/ai/conversation-starters')
+        .then(response => response.json())
+        .then(data => {
+            const starters = data.conversation_starters;
+            const startersDisplay = `💬 Conversation Starters
+
+${starters.map((starter, index) => `${index + 1}. ${starter.text}`).join('\n\n')}
+
+💡 Use these prompts to start meaningful conversations about your wellness journey.`;
+            
+            alert(startersDisplay);
+        })
+        .catch(error => {
+            alert('Failed to get conversation starters. Please try again.');
+        })
+        .finally(() => {
+            // Reset button
+            button.innerHTML = originalContent;
+            button.className = originalClass;
+            button.disabled = false;
+        });
+}
+</script>
+
+{% endblock %}

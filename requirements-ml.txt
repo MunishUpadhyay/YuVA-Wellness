@@ -1,0 +1,25 @@
+# Extended ML dependencies (optional)
+# Install with: pip install -r requirements-ml.txt
+
+# Data processing
+pandas==2.3.2
+numpy==2.3.3
+
+# Machine learning
+scikit-learn==1.7.2
+joblib==1.5.2
+
+# NLP libraries
+nltk==3.8.1
+spacy==3.7.2
+
+# Deep learning (heavy)
+transformers==4.35.0
+torch==2.1.0
+
+# Visualization
+plotly==5.17.0
+
+# Authentication (if needed)
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4

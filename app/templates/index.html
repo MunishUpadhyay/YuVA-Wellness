@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+{% block title %}YuVA Wellness - Your AI Mental Health Companion{% endblock %}
+
+{% block extra_head %}
+<script src="/components/home/home-page.js" defer></script>
+<style>
+/* FORCE FIXED HEADER - CRITICAL FIX */
+header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 99999 !important;
+  background: rgba(26, 26, 46, 0.98) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 1rem 0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* REMOVE BODY PADDING FOR HOMEPAGE */
+body {
+  padding-top: 0 !important;
+}
+
+/* MAIN CONTENT POSITIONING */
+main {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.hero-section {
+  text-align: center;
+  padding: var(--spacing-2xl) 0;
+  margin-bottom: var(--spacing-2xl);
+  position: relative;
+  overflow: hidden;
+  margin-top: 0 !important; /* Remove gap */
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  margin-bottom: var(--spacing-lg);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-2xl);
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-xl);
+}
+
+.hero-btn {
+  font-size: 1.1rem;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  border-radius: var(--border-radius-lg);
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.features-section {
+  margin: var(--spacing-2xl) 0;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  text-align: center;
+  transition: var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-lg);
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+  flex-grow: 1;
+  line-height: 1.6;
+}
+
+.cta-section {
+  text-align: center;
+  padding: var(--spacing-2xl) 0;
+  margin-top: var(--spacing-2xl);
+}
+
+.cta-card {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-xl);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cta-title {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-lg);
+  font-weight: 700;
+  color: white;
+}
+
+.cta-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-2xl);
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: var(--spacing-lg);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.trust-section {
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin-top: var(--spacing-xl);
+}
+
+.trust-title {
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.trust-indicators {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.trust-item i {
+  font-size: 1.2rem;
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+  
+  .cta-title {
+    font-size: 2rem;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-buttons .btn {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  .trust-indicators {
+    gap: var(--spacing-lg);
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero-image-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: var(--spacing-xl) var(--spacing-lg); text-align: center; margin: var(--spacing-lg); border-radius: var(--border-radius-xl); margin-top: 100px; min-height: 50vh; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <div style="max-width: 1000px; margin: 0 auto; padding: 0 var(--spacing-md);">
+        <div style="margin-bottom: var(--spacing-lg);">
+            <div style="font-size: 5rem; margin-bottom: var(--spacing-md); opacity: 0.95; line-height: 1.2;">
+                🧠💚🤝
+            </div>
+            <div style="font-size: 3.5rem; margin-bottom: var(--spacing-md); opacity: 0.9;">
+                ✨🌱🎯
+            </div>
+        </div>
+        
+        <h1 style="color: white; font-size: 2.5rem; font-weight: 800; margin-bottom: var(--spacing-md); text-shadow: 0 4px 8px rgba(0,0,0,0.3); line-height: 1.2;">
+            YuVA Wellness
+        </h1>
+        
+        <h2 style="color: rgba(255,255,255,0.95); font-size: 1.5rem; font-weight: 600; margin-bottom: var(--spacing-md); text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            Your AI Mental Health Companion
+        </h2>
+        
+        <div style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: var(--spacing-lg); text-shadow: 0 1px 2px rgba(0,0,0,0.2); text-align: center;">
+            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: var(--spacing-sm);">
+                <span style="white-space: nowrap;">Track Moods</span>
+                <span style="color: rgba(255,255,255,0.7);">•</span>
+                <span style="white-space: nowrap;">Chat with AI</span>
+                <span style="color: rgba(255,255,255,0.7);">•</span>
+                <span style="white-space: nowrap;">Discover Insights</span>
+                <span style="color: rgba(255,255,255,0.7);">•</span>
+                <span style="white-space: nowrap;">Build Wellness Habits</span>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: var(--spacing-md); justify-content: center; flex-wrap: wrap;">
+            <a href="/mood" style="background: white; color: #667eea; padding: var(--spacing-sm) var(--spacing-lg); border-radius: var(--border-radius-lg); text-decoration: none; font-weight: 600; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.3s ease; display: inline-flex; align-items: center; gap: var(--spacing-xs);" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                <i class="fas fa-heart"></i> Start Your Journey
+            </a>
+            <a href="/chat" style="background: rgba(255,255,255,0.2); color: white; padding: var(--spacing-sm) var(--spacing-lg); border-radius: var(--border-radius-lg); text-decoration: none; font-weight: 600; font-size: 1rem; border: 2px solid rgba(255,255,255,0.3); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: var(--spacing-xs);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                <i class="fas fa-comments"></i> Chat with AI
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <h2 class="section-title">
+        Everything You Need for Mental Wellness
+    </h2>
+    
+    <div class="features-grid">
+        <div class="feature-card">
+            <span class="feature-icon">💚</span>
+            <h3>Mood Tracking</h3>
+            <p>Log your daily emotions and discover patterns in your mental wellness journey with our intuitive mood calendar.</p>
+            <a href="/mood" class="btn" style="width: 100%;">
+                <i class="fas fa-arrow-right"></i> Track Mood
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-icon">🤖</span>
+            <h3>AI Companion</h3>
+            <p>Chat with our empathetic AI for support, guidance, and personalized insights available 24/7 whenever you need it.</p>
+            <a href="/chat" class="btn" style="width: 100%; background: #F5276C; color: white;">
+                <i class="fas fa-arrow-right"></i> Start Chat
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-icon">📝</span>
+            <h3>Digital Journal</h3>
+            <p>Express your thoughts in a private, secure journal with AI-powered sentiment analysis and insights.</p>
+            <a href="/journal" class="btn btn-success" style="width: 100%;">
+                <i class="fas fa-arrow-right"></i> Write Journal
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-icon">📊</span>
+            <h3>Wellness Analytics</h3>
+            <p>Get comprehensive insights into your mental wellness patterns with advanced analytics and recommendations.</p>
+            <a href="/analytics" class="btn btn-warning" style="width: 100%;">
+                <i class="fas fa-arrow-right"></i> View Analytics
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-icon">📚</span>
+            <h3>Mental Health Resources</h3>
+            <p>Access curated resources, crisis support, and professional guidance when you need them most.</p>
+            <a href="/resources" class="btn btn-danger" style="width: 100%;">
+                <i class="fas fa-arrow-right"></i> Browse Resources
+            </a>
+        </div>
+
+        <div class="feature-card">
+            <span class="feature-icon">🛡️</span>
+            <h3>Privacy & Safety</h3>
+            <p>Your data is secure with end-to-end encryption, crisis detection, and complete privacy protection.</p>
+            <a href="/resources" class="btn btn-info" style="width: 100%;">
+                <i class="fas fa-shield-alt"></i> Learn More
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="card cta-card">
+        <h2 class="cta-title">
+            Ready to Start Your Wellness Journey?
+        </h2>
+        <p class="cta-subtitle">
+            Join thousands of users improving their mental health with YuVA. 
+            Take the first step towards better mental wellness today.
+        </p>
+        <div class="cta-buttons">
+            <a href="/mood" class="btn" style="background: white; color: var(--primary); font-weight: 600;">
+                <i class="fas fa-rocket"></i> Get Started Free
+            </a>
+            <a href="/resources" class="btn" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
+                <i class="fas fa-info-circle"></i> Learn More
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="trust-section">
+    <h3 class="trust-title">
+        Trusted & Secure
+    </h3>
+    <div class="trust-indicators">
+        <div class="trust-item">
+            <i class="fas fa-shield-alt"></i>
+            <span>Secure & Private</span>
+        </div>
+        <div class="trust-item">
+            <i class="fas fa-lock"></i>
+            <span>Encrypted Data</span>
+        </div>
+        <div class="trust-item">
+            <i class="fas fa-heart"></i>
+            <span>Made with Care</span>
+        </div>
+        <div class="trust-item">
+            <i class="fas fa-clock"></i>
+            <span>24/7 Available</span>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+{% endblock %}
