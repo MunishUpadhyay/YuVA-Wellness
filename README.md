@@ -62,7 +62,7 @@ Ever wished you could have a structured conversation about your mental health? O
 ---
 
 ### � **Your Personal AI Dashboard**
-![AI Dashboard](YOUR_DASHBOARD_IMAGE_URL_HERE)
+![AI Dashboard](https://raw.githubusercontent.com/MunishUpadhyay/Materials/refs/heads/main/Screenshot%202026-01-24%20045730.png)
 
 Imagine having a personal wellness coach who knows exactly what you need, when you need it. Your dashboard adapts to you, not the other way around.
 
@@ -261,9 +261,8 @@ graph TB
 │   ├── 🎭 static/                   # Static assets
 │   │   ├── 🎨 styles.css            # Main stylesheet
 │   │   ├── ⚡ ui-enhancements.js    # UI interactions
-│   │   ├── 🔊 chat-sounds.js        # Audio feedback
-│   │   ├── 📱 sw.js                 # Service worker (PWA)
-│   │   └── 📋 manifest.json         # PWA manifest
+│   │   ├── � sw.js                 # Service worker (PWA)
+│   │   └── � manifest.json         # PWA manifeste
 │   │
 │   └── 🧩 components/               # Reusable components
 │       ├── 🔧 shared/               # Shared utilities
@@ -310,11 +309,11 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph "💬 Chat System"
+    subgraph "🧠 Assessment System"
         C1[User Input] --> C2[AI Processing]
         C2 --> C3[Safety Check]
         C3 --> C4[Response Generation]
-        C4 --> C5[Stream to UI]
+        C4 --> C5[Personalized Insights]
     end
     
     subgraph "😊 Mood Tracking"
