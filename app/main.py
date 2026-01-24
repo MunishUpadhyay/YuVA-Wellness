@@ -28,7 +28,7 @@ app.add_middleware(LoggingMiddleware)
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],  # Add your frontend URLs
+    allow_origins=["*"],  # Allow all origins for deployment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -67,7 +67,8 @@ async def api_status():
     try:
         with get_session() as session:
             # Test database connection
-            session.execute("SELECT 1")
+            from sqlalchemy import text
+            session.execute(text("SELECT 1"))
             db_status = "connected"
     except Exception as e:
         db_status = f"error: {str(e)}"

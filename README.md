@@ -9,11 +9,30 @@
 [![Mental Health](https://img.shields.io/badge/Mental%20Health-Support-purple.svg)](#)
 [![Privacy First](https://img.shields.io/badge/Privacy-First-green.svg)](#)
 
-> **🌟 Your personal AI companion for mental wellness. Chat, track, analyze, and grow - all while keeping your data completely private.**
+> **🌟 Your personal AI companion for mental wellness. Assess, track, analyze, and grow - all while keeping your data completely private.**
 
-[🚀 Quick Start](#-quick-start) • [🛠️ Tech Stack](#️-tech-stack) • [🔄 Workflow](#-project-workflow) • [🆘 Crisis Support](#-crisis-support)
+**� [Live Demo](YOUR_LIVE_LINK_HERE)** | [🛠️ Tech Stack](#️-tech-stack) | [🔄 Workflow](#-project-workflow) | [🆘 Crisis Support](#-crisis-support)
 
 </div>
+
+---
+
+## 🚀 Quick Start
+
+### Local Development
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd YuVA-Wellness
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the application
+python run.py
+
+# Access at http://localhost:8000
+```
 
 ---
 
@@ -22,27 +41,28 @@
 YuVA Wellness isn't just another mental health app. It's your private, AI-powered companion that understands, learns, and grows with you on your wellness journey.
 
 ### 🏠 **Welcome Home**
-![Homepage Screenshot](https://raw.githubusercontent.com/MunishUpadhyay/Materials/refs/heads/main/Screenshot%202026-01-22%20222823.png)
+![Homepage Screenshot](https://raw.githubusercontent.com/MunishUpadhyay/Materials/refs/heads/main/Screenshot%202026-01-25%20041045.png)
 
 Your journey begins here. A clean, welcoming interface that feels like a warm hug. But there's so much more beneath the surface...
 
 ---
 
-### 💬 **AI Chat That Actually Gets You**
-![AI Chat Interface](https://raw.githubusercontent.com/MunishUpadhyay/Materials/refs/heads/main/Screenshot%202026-01-22%20223250.png)
+### 🧠 **Wellness Assessment That Actually Gets You**
+![Wellness Assessment Interface](https://raw.githubusercontent.com/MunishUpadhyay/Materials/refs/heads/main/Screenshot%202026-01-25%20041125.png)
 
-Ever wished you could talk to someone who truly understands mental health? Our AI doesn't just respond - it listens, remembers, and provides real support when you need it most.
+Ever wished you could have a structured conversation about your mental health? Our wellness assessment doesn't just ask questions - it listens, understands, and provides personalized insights when you need them most.
 
 **What makes it special:**
-- Real-time streaming conversations
+- Structured mental health questionnaire
+- Personalized recommendations based on your responses
 - Crisis detection and immediate help
-- Remembers your journey
-- Available 24/7, completely private
+- Completely private and secure
+- Available 24/7
 
 ---
 
-### 🧠 **Your Personal AI Dashboard**
-![AI Dashboard](https://raw.githubusercontent.com/MunishUpadhyay/Materials/refs/heads/main/Screenshot%202026-01-24%20045730.png)
+### � **Your Personal AI Dashboard**
+![AI Dashboard](YOUR_DASHBOARD_IMAGE_URL_HERE)
 
 Imagine having a personal wellness coach who knows exactly what you need, when you need it. Your dashboard adapts to you, not the other way around.
 
@@ -214,11 +234,15 @@ graph TB
 │   │   └── 📝 __init__.py
 │   │
 │   ├── 🛣️ routers/                  # API endpoints
-│   │   ├── 📖 journal.py            # Journal & analytics routes
+│   │   ├── 💬 chat.py               # Wellness assessment routes
+│   │   ├── 📖 journal.py            # Journal & mood routes
+│   │   ├── 📊 analytics.py          # Analytics routes
+│   │   ├── 🤖 ai_features.py        # AI-powered features
+│   │   ├── 📚 resources.py          # Mental health resources
 │   │   └── 📝 __init__.py
 │   │
 │   ├── 🧠 services/                 # Business logic
-│   │   ├── 🤖 ai_assistant.py       # AI chat functionality
+│   │   ├── 🤖 ai_assistant.py       # AI wellness assistant
 │   │   ├── 💬 llm.py                # Language model integration
 │   │   ├── 📈 ml_analytics.py       # Machine learning analytics
 │   │   ├── 🆘 safety.py             # Crisis detection & safety
@@ -226,11 +250,11 @@ graph TB
 │   │
 │   ├── 🎨 templates/                # HTML templates
 │   │   ├── 🏠 index.html            # Homepage
-│   │   ├── 💬 chat.html             # AI chat interface
+│   │   ├── 🧠 chat_guided.html      # Wellness assessment
 │   │   ├── 📖 journal.html          # Journaling page
-│   │   ├── 😊 mood.html             # Mood tracking
+│   │   ├── 😊 mood.html             # Mood tracking calendar
 │   │   ├── 📊 analytics.html        # Analytics dashboard
-│   │   ├── 🧠 ai_dashboard.html     # AI dashboard
+│   │   ├── 🤖 ai_dashboard.html     # AI insights dashboard
 │   │   ├── 🆘 resources.html        # Crisis resources
 │   │   └── 🎯 base.html             # Base template
 │   │
@@ -243,17 +267,19 @@ graph TB
 │   │
 │   └── 🧩 components/               # Reusable components
 │       ├── 🔧 shared/               # Shared utilities
-│       ├── 📊 analytics/            # Analytics components
-│       ├── 💬 chat/                 # Chat components
-│       ├── 🎛️ dashboard/            # Dashboard components
+│       │   ├── 🎨 base_styles.css   # Shared styles
+│       │   ├── 🧭 navigation.js     # Navigation logic
+│       │   └── 🛠️ utils.js          # Utility functions
 │       ├── 🏠 home/                 # Homepage components
-│       ├── 📖 journal/              # Journal components
-│       └── 😊 mood/                 # Mood tracking components
+│       │   └── 📄 home-page.js      # Homepage interactions
+│       └── 🎛️ dashboard/            # Dashboard components
+│           └── 📊 ai-widgets.js     # AI dashboard widgets
 │
 ├── 📦 requirements.txt              # Python dependencies
+├── 🐍 runtime.txt                   # Python version for deployment
+├── ⚙️ render.yaml                   # Render deployment config
 ├── 🚀 run.py                       # Application runner
-├── 🪟 start_server.bat             # Windows startup script
-└── 🗄️ yuva.db                      # SQLite database
+└── �️ yuva.db                      # SQLite database (auto-created)
 ```
 
 ### **🔄 Data Flow Architecture**
@@ -330,18 +356,18 @@ graph TD
     end
     
     subgraph "🎯 Core Features"
-        CHAT[💬 AI Chat]
+        ASSESSMENT[🧠 Wellness Assessment]
         MOOD[😊 Mood Tracking]
         JOURNAL[📖 Journaling]
         ANALYTICS[📊 Analytics]
     end
     
-    LOCAL --> CHAT
+    LOCAL --> ASSESSMENT
     NOCLOUD --> MOOD
     ENCRYPT --> JOURNAL
     VALIDATE --> ANALYTICS
-    SANITIZE --> CHAT
-    CRISIS --> CHAT
+    SANITIZE --> ASSESSMENT
+    CRISIS --> ASSESSMENT
 ```
 
 ### **⚡ Performance & Scalability**
@@ -403,7 +429,7 @@ MIT License - Use it, modify it, share it. Mental health support should be acces
 
 **Ready to discover what YuVA Wellness can do for you?**
 
-[🚀 **Start Your Journey**](http://localhost:8000) • [💬 **Chat Now**](http://localhost:8000/chat) • [🧠 **Explore Dashboard**](http://localhost:8000/dashboard)
+[🚀 **Start Your Journey**](http://localhost:8000) • [🧠 **Take Assessment**](http://localhost:8000/wellness) • [� **Explore Dashboard**](http://localhost:8000/dashboard)
 
 *Made with ❤️ for your wellbeing*
 

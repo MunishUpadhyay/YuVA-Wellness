@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+{% block title %}Assessment - YuVA Wellness{% endblock %}
+
+{% block extra_head %}
+<style>
+.chat-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.chat-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.progress-info {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+    height: 4px;
+    border-radius: 2px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: white;
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+.language-buttons {
+    margin-top: 1rem;
+}
+
+.nav-buttons {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.nav-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.lang-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lang-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.chat-content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.question-card {
+    background: var(--bg-card);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.question-number {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.question-text {
+    color: var(--text-primary);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.options-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.option-button {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.option-button:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.option-emoji {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.option-text {
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+.option-button:hover .option-text {
+    color: white;
+}
+
+.ai-response {
+    background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+    border-left: 4px solid #00b894;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    color: #2d3748;
+    font-style: italic;
+}
+
+.completion-section {
+    background: var(--bg-card);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.completion-title {
+    color: var(--primary);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.recommendation-section {
+    margin-bottom: 2rem;
+}
+
+.recommendation-title {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+}
+
+.recommendation-list {
+    list-style: none;
+    padding: 0;
+}
+
+.recommendation-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.recommendation-list li:last-child {
+    border-bottom: none;
+}
+
+.restart-button {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 2rem auto 0;
+}
+
+.restart-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.section-content {
+    display: none;
+}
+
+.section-content.active {
+    display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <h2>🧠 YuVA Wellness Assessment & Guide</h2>
+        <div class="progress-info">
+            <span id="progress-text">Question 1 of 8</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 12.5%"></div>
+        </div>
+        <div class="language-buttons">
+            <button class="lang-btn active" onclick="setLanguage('en')" id="lang-en">English</button>
+            <button class="lang-btn" onclick="setLanguage('hi-en')" id="lang-hi">हिंग्लिश</button>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('assessment')" id="nav-assessment">Wellness Assessment</button>
+            <button class="nav-btn" onclick="showSection('education')" id="nav-education">Mental Health Guide</button>
+        </div>
+    </div>
+
+    <div class="chat-content">
+        <!-- Assessment section -->
+        <div id="assessment-section" class="section-content active">
+            <!-- Assessment content will be loaded here -->
+        </div>
+        
+        <!-- Education section -->
+        <div id="education-section" class="section-content">
+            <!-- Education content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+let currentQuestionIndex = 0;
+let currentLang = localStorage.getItem('yuva-language') || 'en';
+let userResponses = [];
+let currentSection = 'assessment';
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded');
+    updateLanguageButtons();
+    showSection('assessment');
+});
+
+function showSection(section) {
+    console.log('Showing section:', section);
+    currentSection = section;
+    
+    // Update navigation buttons
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('nav-' + section).classList.add('active');
+    
+    // Show/hide sections
+    document.querySelectorAll('.section-content').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(section + '-section').classList.add('active');
+    
+    // Show/hide progress bar
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.querySelector('.progress-bar');
+    
+    if (section === 'assessment') {
+        progressText.style.display = 'block';
+        progressBar.style.display = 'block';
+        startConversation();
+    } else if (section === 'education') {
+        progressText.style.display = 'none';
+        progressBar.style.display = 'none';
+        showEducationContent();
+    }
+}
+
+function startConversation() {
+    console.log('Starting conversation');
+    currentQuestionIndex = 0;
+    userResponses = [];
+    
+    const assessmentSection = document.getElementById('assessment-section');
+    assessmentSection.innerHTML = `
+        <div class="question-card fade-in">
+            <div class="question-number">Question 1 of 8</div>
+            <div class="question-text">Hi! I'm YuVA, your mental health companion. Let's start with understanding your recent experiences. Over the past 2 weeks, how often have you felt down, depressed, or hopeless?</div>
+            <div class="options-container">
+                <button class="option-button" onclick="selectOption('depression_none')">
+                    <span class="option-emoji">😊</span>
+                    <span class="option-text">Not at all - I've been feeling positive</span>
+                </button>
+                <button class="option-button" onclick="selectOption('depression_several')">
+                    <span class="option-emoji">😐</span>
+                    <span class="option-text">Several days - occasionally feeling low</span>
+                </button>
+                <button class="option-button" onclick="selectOption('depression_more_half')">
+                    <span class="option-emoji">😔</span>
+                    <span class="option-text">More than half the days</span>
+                </button>
+                <button class="option-button" onclick="selectOption('depression_daily')">
+                    <span class="option-emoji">😞</span>
+                    <span class="option-text">Nearly every day</span>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function selectOption(value) {
+    console.log('Selected option:', value);
+    userResponses.push(value);
+    
+    const assessmentSection = document.getElementById('assessment-section');
+    assessmentSection.innerHTML = `
+        <div class="completion-section fade-in">
+            <h2 class="completion-title">🎉 Thank You!</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                Thank you for your response. This is a simplified version to test the interface.
+            </p>
+            <button class="restart-button" onclick="startConversation()">Start Again</button>
+        </div>
+    `;
+}
+
+function showEducationContent() {
+    console.log('Showing education content');
+    const educationSection = document.getElementById('education-section');
+    
+    educationSection.innerHTML = `
+        <div class="question-card fade-in">
+            <h2 style="color: var(--primary); text-align: center; margin-bottom: 1rem;">
+                🧠 Understanding Mental Health Conditions
+            </h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                Learn about different mental health conditions - their symptoms, causes, and treatment options.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem;">😔</div>
+                        <h3 style="color: var(--text-primary); margin: 0;">Depression</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); line-height: 1.5;">
+                        A mood disorder that causes persistent feelings of sadness, hopelessness, and loss of interest in activities.
+                    </p>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        <strong>Key Symptoms:</strong> Persistent sad mood, loss of interest, sleep disturbances, fatigue
+                    </div>
+                </div>
+                
+                <div style="background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem;">😰</div>
+                        <h3 style="color: var(--text-primary); margin: 0;">Anxiety Disorders</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); line-height: 1.5;">
+                        A group of mental health conditions characterized by excessive fear, worry, and related behavioral disturbances.
+                    </p>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        <strong>Key Symptoms:</strong> Excessive worry, rapid heartbeat, sweating, panic attacks
+                    </div>
+                </div>
+                
+                <div style="background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="font-size: 2rem;">🎭</div>
+                        <h3 style="color: var(--text-primary); margin: 0;">Bipolar Disorder</h3>
+                    </div>
+                    <p style="color: var(--text-secondary); line-height: 1.5;">
+                        A mental health condition that causes extreme mood swings including emotional highs (mania) and lows (depression).
+                    </p>
+                    <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        <strong>Key Symptoms:</strong> Manic episodes, depressive episodes, rapid speech, impulsive behavior
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #e8f5e8, #f0f8f0); border-radius: 15px; padding: 2rem; margin-top: 2rem; border-left: 4px solid #00b894;">
+                <h3 style="color: #2d3748; font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem;">
+                    💡 Mental Health Tips
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    <div style="background: white; padding: 1rem; border-radius: 10px; border: 1px solid #e2e8f0; color: #2d3748;">
+                        <strong style="color: #00b894;">Regular Exercise:</strong>
+                        Just 30 minutes of daily exercise can significantly improve mood and reduce stress.
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 10px; border: 1px solid #e2e8f0; color: #2d3748;">
+                        <strong style="color: #00b894;">Healthy Sleep:</strong>
+                        Aim for 7-9 hours of quality sleep each night for optimal mental health.
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 10px; border: 1px solid #e2e8f0; color: #2d3748;">
+                        <strong style="color: #00b894;">Professional Help:</strong>
+                        Seeking help from mental health professionals is a sign of strength, not weakness.
+                    </div>
+                </div>
+            </div>
+            
+            <button style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: block; margin: 2rem auto 0;" onclick="showSection('assessment')">
+                🔄 Back to Wellness Assessment
+            </button>
+        </div>
+    `;
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('yuva-language', lang);
+    updateLanguageButtons();
+    
+    // Refresh current section content
+    if (currentSection === 'assessment') {
+        startConversation();
+    } else if (currentSection === 'education') {
+        showEducationContent();
+    }
+}
+
+function updateLanguageButtons() {
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = currentLang === 'hi-en' ? 'lang-hi' : 'lang-en';
+    document.getElementById(activeBtn).classList.add('active');
+}
+</script>
+{% endblock %}

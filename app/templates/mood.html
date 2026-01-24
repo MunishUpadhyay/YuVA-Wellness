@@ -285,16 +285,13 @@
     <!-- Calendar -->
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="margin: 0;">
+            <h3 style="margin: 0;" id="calendarHeader">
                 <i class="fas fa-calendar-alt"></i> This Month's Mood Calendar
             </h3>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button id="calendarViewBtn" class="btn-secondary" onclick="toggleCalendarView()" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
                     <i class="fas fa-th"></i> <span id="viewText">Grid View</span>
                 </button>
-                <select id="monthSelector" onchange="changeMonth()" style="padding: 0.5rem; border-radius: 6px; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text);">
-                    <!-- Will be populated by JavaScript -->
-                </select>
             </div>
         </div>
         
@@ -340,8 +337,6 @@
 // Enhanced Mood Assessment System
 let assessmentAnswers = {};
 let currentView = 'grid'; // 'grid' or 'list'
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
 const totalQuestions = 6;
 
 // Initialize page
@@ -350,7 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMoodCalendar();
     loadMoodStats();
     loadMoodInsights();
-    initializeMonthSelector();
 });
 
 // Quick Mood Functions
@@ -674,48 +668,6 @@ function showListView() {
         .catch(error => {
             calendarDiv.innerHTML = '<p style="color: #e17055;">Failed to load mood history</p>';
         });
-}
-
-function initializeMonthSelector() {
-    const selector = document.getElementById('monthSelector');
-    const months = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    
-    const currentDate = new Date();
-    const currentMonthIndex = currentDate.getMonth();
-    const currentYearValue = currentDate.getFullYear();
-    
-    // Add current year and previous year options
-    for (let year = currentYearValue; year >= currentYearValue - 1; year--) {
-        for (let month = 11; month >= 0; month--) {
-            if (year === currentYearValue && month > currentMonthIndex) continue;
-            
-            const option = document.createElement('option');
-            option.value = `${year}-${month}`;
-            option.textContent = `${months[month]} ${year}`;
-            
-            if (year === currentYearValue && month === currentMonthIndex) {
-                option.selected = true;
-            }
-            
-            selector.appendChild(option);
-        }
-    }
-}
-
-function changeMonth() {
-    const selector = document.getElementById('monthSelector');
-    const [year, month] = selector.value.split('-');
-    currentYear = parseInt(year);
-    currentMonth = parseInt(month);
-    
-    if (currentView === 'grid') {
-        loadMoodCalendar();
-    } else {
-        showListView();
-    }
 }
 
 function showMessage(message, type) {

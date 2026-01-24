@@ -18,9 +18,15 @@ templates = Jinja2Templates(directory="app/templates")
 llm_client = EnhancedGenerativeAIClient()
 
 
+@router.get("/wellness", response_class=HTMLResponse)
+async def wellness_page(request: Request):
+    return templates.TemplateResponse("chat_guided.html", {"request": request})
+
+
+# Keep the old /chat route for backward compatibility
 @router.get("/chat", response_class=HTMLResponse)
-async def chat_page(request: Request):
-    return templates.TemplateResponse("chat.html", {"request": request})
+async def chat_page_redirect(request: Request):
+    return templates.TemplateResponse("chat_guided.html", {"request": request})
 
 
 @router.post("/api/chat/stream")
