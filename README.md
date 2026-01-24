@@ -251,7 +251,6 @@ graph TB
 │       └── 😊 mood/                 # Mood tracking components
 │
 ├── 📦 requirements.txt              # Python dependencies
-├── 🧠 requirements-ml.txt           # ML-specific dependencies
 ├── 🚀 run.py                       # Application runner
 ├── 🪟 start_server.bat             # Windows startup script
 └── 🗄️ yuva.db                      # SQLite database
