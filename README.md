@@ -11,7 +11,7 @@
 
 > **🌟 Your personal AI companion for mental wellness. Chat, track, analyze, and grow - all while keeping your data completely private.**
 
-[🚀 Try It Now](#-quick-start) • [✨ Features](#-what-youll-discover) • [🛠️ Install](#-installation) • [🆘 Need Help?](#-crisis-support)
+[🚀 Quick Start](#-quick-start) • [🛠️ Tech Stack](#️-tech-stack) • [🔄 Workflow](#-project-workflow) • [🆘 Crisis Support](#-crisis-support)
 
 </div>
 
@@ -114,8 +114,8 @@ Ready to begin your wellness journey? It's easier than you think.
 
 ```bash
 # 1. Clone and enter
-git clone https://github.com/yourusername/yuva-wellness.git
-cd yuva-wellness
+git clone https://github.com/MunishUpadhyay/YuVA-Wellness.git
+cd YuVA-Wellness
 
 # 2. Install dependencies
 pip install -r requirements.txt
@@ -131,81 +131,99 @@ Visit **http://localhost:8000** and discover what makes YuVA special.
 
 ---
 
-## 🚀 Live Demo & Deployment
+## 🛠️ **Tech Stack**
 
-### 🌍 **Try YuVA Wellness Online**
-Experience YuVA Wellness without any installation:
+### **Backend**
+- **Python 3.8+** - Core programming language
+- **FastAPI** - Modern, fast web framework for building APIs
+- **SQLite** - Lightweight database for local data storage
+- **Uvicorn** - ASGI server for running the application
 
-**🔗 Live Demo**: [https://yuva-wellness-demo.herokuapp.com](https://yuva-wellness-demo.herokuapp.com)
+### **Frontend**
+- **HTML5** - Semantic markup structure
+- **CSS3** - Modern styling with custom properties and animations
+- **JavaScript (ES6+)** - Interactive functionality and API communication
+- **Progressive Web App (PWA)** - Offline capabilities and app-like experience
 
-*Note: Demo resets every 24 hours. For full experience, run locally.*
+### **AI & Machine Learning**
+- **Custom NLP Models** - For sentiment analysis and mood prediction
+- **Pattern Recognition** - Advanced analytics for wellness insights
+- **Real-time Processing** - Instant mood and journal analysis
 
-### ☁️ **Deploy Your Own Instance**
-
-#### **Deploy to Heroku** (Recommended)
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/yourusername/yuva-wellness)
-
-#### **Deploy to Railway**
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/yuva-wellness)
-
-#### **Deploy to Render**
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/yourusername/yuva-wellness)
-
-#### **Deploy to DigitalOcean**
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/yourusername/yuva-wellness)
-
-### 🐳 **Docker Deployment**
-```bash
-# Quick Docker setup
-docker build -t yuva-wellness .
-docker run -p 8000:8000 yuva-wellness
-```
-
-### 🔧 **Environment Variables for Deployment**
-```env
-# Required for production
-PORT=8000
-DATABASE_URL=sqlite:///./yuva.db
-
-# Optional enhancements
-ENABLE_ANALYTICS=false
-SECRET_KEY=your-production-secret-key
-CORS_ORIGINS=https://yourdomain.com
-```
+### **Key Libraries**
+- **Jinja2** - Template engine for dynamic HTML rendering
+- **Python-multipart** - File upload handling
+- **Starlette** - Web framework components
 
 ---
 
-## � Screenshots & Assets
+## 🔄 **Project Workflow**
 
-### 🖼️ **Adding Screenshots to Your Fork**
-
-To display screenshots in your README, create the following folder structure in your repository:
-
+### **Application Architecture**
 ```
-your-repo/
-├── assets/
-│   └── screenshots/
-│       ├── homepage.png
-│       ├── chat-interface.png
-│       ├── ai-dashboard.png
-│       ├── journal-page.png
-│       ├── mood-tracking.png
-│       ├── analytics-dashboard.png
-│       └── resources-page.png
+YuVA-Wellness/
+├── app/
+│   ├── main.py              # FastAPI application entry point
+│   ├── config.py            # Configuration settings
+│   ├── middleware.py        # Custom middleware
+│   ├── security.py          # Security utilities
+│   ├── models/              # Database models
+│   │   ├── db.py           # Database connection and models
+│   │   └── __init__.py
+│   ├── routers/             # API route handlers
+│   │   ├── journal.py      # Journal and analytics endpoints
+│   │   └── __init__.py
+│   ├── services/            # Business logic
+│   │   ├── ai_assistant.py # AI chat functionality
+│   │   ├── llm.py          # Language model integration
+│   │   ├── ml_analytics.py # Machine learning analytics
+│   │   ├── safety.py       # Content safety and crisis detection
+│   │   └── __init__.py
+│   ├── templates/           # HTML templates
+│   │   ├── base.html       # Base template
+│   │   ├── index.html      # Homepage
+│   │   ├── chat.html       # AI chat interface
+│   │   ├── journal.html    # Journaling page
+│   │   ├── mood.html       # Mood tracking
+│   │   ├── analytics.html  # Analytics dashboard
+│   │   ├── ai_dashboard.html # AI dashboard
+│   │   └── resources.html  # Crisis resources
+│   ├── static/              # Static assets
+│   │   ├── styles.css      # Main stylesheet
+│   │   ├── ui-enhancements.js # UI interactions
+│   │   ├── chat-sounds.js  # Audio feedback
+│   │   ├── sw.js           # Service worker for PWA
+│   │   └── manifest.json   # PWA manifest
+│   └── components/          # Reusable components
+│       ├── shared/         # Shared utilities
+│       ├── analytics/      # Analytics components
+│       ├── chat/           # Chat components
+│       ├── dashboard/      # Dashboard components
+│       ├── home/           # Homepage components
+│       ├── journal/        # Journal components
+│       └── mood/           # Mood tracking components
+├── requirements.txt         # Python dependencies
+├── requirements-ml.txt      # ML-specific dependencies
+├── run.py                  # Application runner
+├── start_server.bat        # Windows startup script
+└── yuva.db                 # SQLite database file
 ```
 
-### 📋 **Screenshot Guidelines**
-- **Resolution**: 1920x1080 or 1440x900 for desktop views
-- **Format**: PNG for crisp UI elements
-- **Mobile**: Include mobile screenshots at 375x812 (iPhone X)
-- **File Size**: Keep under 500KB each for fast loading
-- **Content**: Use sample data, avoid personal information
+### **Data Flow**
+1. **User Interaction** → Frontend captures user input
+2. **API Request** → JavaScript sends data to FastAPI endpoints
+3. **Processing** → Backend processes data using AI services
+4. **Database** → SQLite stores user data locally
+5. **Response** → Processed data returned to frontend
+6. **UI Update** → Dynamic updates without page refresh
 
-### 🔗 **Update Image Links**
-Replace `yourusername` in the image URLs with your GitHub username:
-```markdown
-![Homepage Screenshot](https://github.com/YOUR-USERNAME/yuva-wellness/assets/screenshots/homepage.png)
-```
+### **Key Features Implementation**
+- **Real-time Chat**: WebSocket-like streaming for AI conversations
+- **Mood Analysis**: ML algorithms analyze mood patterns and trends
+- **Journal Processing**: NLP for sentiment analysis and insights
+- **Crisis Detection**: Safety mechanisms for mental health emergencies
+- **Analytics Engine**: Advanced pattern recognition for wellness insights
+- **PWA Support**: Offline functionality and native app experience
 
 ---
 
@@ -217,17 +235,6 @@ Replace `yourusername` in the image URLs with your GitHub username:
 - ✅ **No Accounts** - No registration, no personal info required
 - ✅ **No Tracking** - Your privacy is sacred
 - ✅ **Open Source** - See exactly how it works
-
----
-
-## 🛠️ Built With Love
-
-**Modern Tech Stack:**
-- 🐍 **Python & FastAPI** - Lightning-fast backend
-- 🎨 **Modern CSS & JavaScript** - Beautiful, responsive design
-- 🗄️ **SQLite** - Your personal, local database
-- 🤖 **Custom AI** - Specialized mental health knowledge
-- 📱 **PWA Ready** - Install like a native app
 
 ---
 
@@ -250,9 +257,9 @@ Replace `yourusername` in the image URLs with your GitHub username:
 Found a bug? Have an idea? Want to contribute to mental health tech?
 
 **We'd love your help:**
-- 🐛 [Report Issues](https://github.com/yourusername/yuva-wellness/issues)
-- 💡 [Suggest Features](https://github.com/yourusername/yuva-wellness/discussions)
-- 🔧 [Contribute Code](https://github.com/yourusername/yuva-wellness/pulls)
+- 🐛 [Report Issues](https://github.com/MunishUpadhyay/YuVA-Wellness/issues)
+- 💡 [Suggest Features](https://github.com/MunishUpadhyay/YuVA-Wellness/discussions)
+- 🔧 [Contribute Code](https://github.com/MunishUpadhyay/YuVA-Wellness/pulls)
 
 ---
 
