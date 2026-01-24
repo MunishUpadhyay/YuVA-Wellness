@@ -157,73 +157,202 @@ Visit **http://localhost:8000** and discover what makes YuVA special.
 
 ---
 
-## 🔄 **Project Workflow**
+## 🔄 **Project Architecture & Workflow**
 
-### **Application Architecture**
-```
-YuVA-Wellness/
-├── app/
-│   ├── main.py              # FastAPI application entry point
-│   ├── config.py            # Configuration settings
-│   ├── middleware.py        # Custom middleware
-│   ├── security.py          # Security utilities
-│   ├── models/              # Database models
-│   │   ├── db.py           # Database connection and models
-│   │   └── __init__.py
-│   ├── routers/             # API route handlers
-│   │   ├── journal.py      # Journal and analytics endpoints
-│   │   └── __init__.py
-│   ├── services/            # Business logic
-│   │   ├── ai_assistant.py # AI chat functionality
-│   │   ├── llm.py          # Language model integration
-│   │   ├── ml_analytics.py # Machine learning analytics
-│   │   ├── safety.py       # Content safety and crisis detection
-│   │   └── __init__.py
-│   ├── templates/           # HTML templates
-│   │   ├── base.html       # Base template
-│   │   ├── index.html      # Homepage
-│   │   ├── chat.html       # AI chat interface
-│   │   ├── journal.html    # Journaling page
-│   │   ├── mood.html       # Mood tracking
-│   │   ├── analytics.html  # Analytics dashboard
-│   │   ├── ai_dashboard.html # AI dashboard
-│   │   └── resources.html  # Crisis resources
-│   ├── static/              # Static assets
-│   │   ├── styles.css      # Main stylesheet
-│   │   ├── ui-enhancements.js # UI interactions
-│   │   ├── chat-sounds.js  # Audio feedback
-│   │   ├── sw.js           # Service worker for PWA
-│   │   └── manifest.json   # PWA manifest
-│   └── components/          # Reusable components
-│       ├── shared/         # Shared utilities
-│       ├── analytics/      # Analytics components
-│       ├── chat/           # Chat components
-│       ├── dashboard/      # Dashboard components
-│       ├── home/           # Homepage components
-│       ├── journal/        # Journal components
-│       └── mood/           # Mood tracking components
-├── requirements.txt         # Python dependencies
-├── requirements-ml.txt      # ML-specific dependencies
-├── run.py                  # Application runner
-├── start_server.bat        # Windows startup script
-└── yuva.db                 # SQLite database file
+### **🏗️ System Architecture Overview**
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        UI[🎨 User Interface]
+        PWA[📱 Progressive Web App]
+        JS[⚡ JavaScript ES6+]
+    end
+    
+    subgraph "Backend Layer"
+        API[🚀 FastAPI Server]
+        MW[🛡️ Middleware]
+        AUTH[🔐 Security]
+    end
+    
+    subgraph "Business Logic"
+        AI[🤖 AI Assistant]
+        ML[🧠 ML Analytics]
+        SAFETY[🆘 Crisis Detection]
+    end
+    
+    subgraph "Data Layer"
+        DB[(🗄️ SQLite Database)]
+        MODELS[📊 Data Models]
+    end
+    
+    UI --> API
+    PWA --> API
+    JS --> API
+    API --> MW
+    MW --> AUTH
+    API --> AI
+    API --> ML
+    API --> SAFETY
+    AI --> DB
+    ML --> DB
+    SAFETY --> DB
+    DB --> MODELS
 ```
 
-### **Data Flow**
-1. **User Interaction** → Frontend captures user input
-2. **API Request** → JavaScript sends data to FastAPI endpoints
-3. **Processing** → Backend processes data using AI services
-4. **Database** → SQLite stores user data locally
-5. **Response** → Processed data returned to frontend
-6. **UI Update** → Dynamic updates without page refresh
+### **📁 Project Structure**
+```
+🧠 YuVA-Wellness/
+├── 🚀 app/                          # Core application
+│   ├── 🎯 main.py                   # FastAPI entry point
+│   ├── ⚙️ config.py                 # Configuration settings
+│   ├── 🛡️ middleware.py             # Custom middleware
+│   ├── 🔐 security.py               # Security utilities
+│   │
+│   ├── 📊 models/                   # Database layer
+│   │   ├── 🗄️ db.py                # Database models & connection
+│   │   └── 📝 __init__.py
+│   │
+│   ├── 🛣️ routers/                  # API endpoints
+│   │   ├── 📖 journal.py            # Journal & analytics routes
+│   │   └── 📝 __init__.py
+│   │
+│   ├── 🧠 services/                 # Business logic
+│   │   ├── 🤖 ai_assistant.py       # AI chat functionality
+│   │   ├── 💬 llm.py                # Language model integration
+│   │   ├── 📈 ml_analytics.py       # Machine learning analytics
+│   │   ├── 🆘 safety.py             # Crisis detection & safety
+│   │   └── 📝 __init__.py
+│   │
+│   ├── 🎨 templates/                # HTML templates
+│   │   ├── 🏠 index.html            # Homepage
+│   │   ├── 💬 chat.html             # AI chat interface
+│   │   ├── 📖 journal.html          # Journaling page
+│   │   ├── 😊 mood.html             # Mood tracking
+│   │   ├── 📊 analytics.html        # Analytics dashboard
+│   │   ├── 🧠 ai_dashboard.html     # AI dashboard
+│   │   ├── 🆘 resources.html        # Crisis resources
+│   │   └── 🎯 base.html             # Base template
+│   │
+│   ├── 🎭 static/                   # Static assets
+│   │   ├── 🎨 styles.css            # Main stylesheet
+│   │   ├── ⚡ ui-enhancements.js    # UI interactions
+│   │   ├── 🔊 chat-sounds.js        # Audio feedback
+│   │   ├── 📱 sw.js                 # Service worker (PWA)
+│   │   └── 📋 manifest.json         # PWA manifest
+│   │
+│   └── 🧩 components/               # Reusable components
+│       ├── 🔧 shared/               # Shared utilities
+│       ├── 📊 analytics/            # Analytics components
+│       ├── 💬 chat/                 # Chat components
+│       ├── 🎛️ dashboard/            # Dashboard components
+│       ├── 🏠 home/                 # Homepage components
+│       ├── 📖 journal/              # Journal components
+│       └── 😊 mood/                 # Mood tracking components
+│
+├── 📦 requirements.txt              # Python dependencies
+├── 🧠 requirements-ml.txt           # ML-specific dependencies
+├── 🚀 run.py                       # Application runner
+├── 🪟 start_server.bat             # Windows startup script
+└── 🗄️ yuva.db                      # SQLite database
+```
 
-### **Key Features Implementation**
-- **Real-time Chat**: WebSocket-like streaming for AI conversations
-- **Mood Analysis**: ML algorithms analyze mood patterns and trends
-- **Journal Processing**: NLP for sentiment analysis and insights
-- **Crisis Detection**: Safety mechanisms for mental health emergencies
-- **Analytics Engine**: Advanced pattern recognition for wellness insights
-- **PWA Support**: Offline functionality and native app experience
+### **🔄 Data Flow Architecture**
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant F as 🎨 Frontend
+    participant A as 🚀 FastAPI
+    participant S as 🧠 AI Services
+    participant D as 🗄️ Database
+    participant ML as 📊 ML Engine
+
+    U->>F: Interacts with UI
+    F->>A: Sends API Request
+    A->>S: Processes with AI
+    S->>ML: Analyzes patterns
+    ML->>D: Stores insights
+    D->>A: Returns data
+    A->>F: JSON Response
+    F->>U: Updates UI dynamically
+    
+    Note over S,ML: Real-time processing
+    Note over D: Local storage only
+```
+
+### **🎯 Feature Implementation Flow**
+
+```mermaid
+flowchart LR
+    subgraph "💬 Chat System"
+        C1[User Input] --> C2[AI Processing]
+        C2 --> C3[Safety Check]
+        C3 --> C4[Response Generation]
+        C4 --> C5[Stream to UI]
+    end
+    
+    subgraph "😊 Mood Tracking"
+        M1[Mood Selection] --> M2[Assessment Questions]
+        M2 --> M3[ML Prediction]
+        M3 --> M4[Pattern Analysis]
+        M4 --> M5[Store & Visualize]
+    end
+    
+    subgraph "📖 Journal Analysis"
+        J1[Journal Entry] --> J2[NLP Processing]
+        J2 --> J3[Sentiment Analysis]
+        J3 --> J4[Insight Generation]
+        J4 --> J5[Trend Detection]
+    end
+    
+    subgraph "📊 Analytics Engine"
+        A1[Data Collection] --> A2[Pattern Recognition]
+        A2 --> A3[Statistical Analysis]
+        A3 --> A4[Personalized Insights]
+        A4 --> A5[Recommendations]
+    end
+```
+
+### **🛡️ Security & Privacy Architecture**
+
+```mermaid
+graph TD
+    subgraph "🔒 Privacy Layer"
+        LOCAL[💻 100% Local Processing]
+        NOCLOUD[🚫 No Cloud Storage]
+        ENCRYPT[🔐 Data Encryption]
+    end
+    
+    subgraph "🛡️ Security Layer"
+        VALIDATE[✅ Input Validation]
+        SANITIZE[🧹 Data Sanitization]
+        CRISIS[🆘 Crisis Detection]
+    end
+    
+    subgraph "🎯 Core Features"
+        CHAT[💬 AI Chat]
+        MOOD[😊 Mood Tracking]
+        JOURNAL[📖 Journaling]
+        ANALYTICS[📊 Analytics]
+    end
+    
+    LOCAL --> CHAT
+    NOCLOUD --> MOOD
+    ENCRYPT --> JOURNAL
+    VALIDATE --> ANALYTICS
+    SANITIZE --> CHAT
+    CRISIS --> CHAT
+```
+
+### **⚡ Performance & Scalability**
+
+- **🚀 FastAPI**: Async/await for high performance
+- **📱 PWA**: Offline-first architecture
+- **🗄️ SQLite**: Lightweight, serverless database
+- **⚡ JavaScript**: Modern ES6+ for optimal performance
+- **🎨 CSS**: Custom properties for efficient styling
+- **🧠 AI**: Optimized models for real-time processing
 
 ---
 
