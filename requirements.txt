@@ -16,5 +16,5 @@ pydantic-settings==2.10.1
 # Basic text processing (lightweight)
 textblob==0.19.0
 
-# Validation
-pydantic==2.5.0
+# Validation - Updated to compatible version
+pydantic==2.7.4
