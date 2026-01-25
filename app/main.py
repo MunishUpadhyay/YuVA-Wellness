@@ -5,9 +5,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models.db import init_db, JournalEntry, MoodLog, get_session
-from .routers import chat, journal, resources, analytics, ai_features
-from .middleware import ErrorHandlingMiddleware, LoggingMiddleware
+from app.models.db import init_db, JournalEntry, MoodLog, get_session
+from app.routers import chat, journal, resources, analytics, ai_features
+from app.middleware import ErrorHandlingMiddleware, LoggingMiddleware
 from pydantic import BaseModel
 from typing import List
 from datetime import date
