@@ -1,0 +1,23 @@
+.inputContainer {
+    @apply relative;
+}
+
+.input {
+    @apply flex h-10 w-full rounded-md border border-slate-700 bg-slate-900/50 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 transition-all;
+}
+
+.input:hover:not(:disabled) {
+    @apply border-slate-600;
+}
+
+.glass {
+    @apply bg-white/5 border-white/10 focus-visible:bg-slate-900/80;
+}
+
+.label {
+    @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-slate-300 mb-2 block;
+}
+
+.error {
+    @apply border-red-500 focus-visible:ring-red-500;
+}

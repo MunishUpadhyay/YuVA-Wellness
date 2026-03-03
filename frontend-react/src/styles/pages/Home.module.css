@@ -1,0 +1,92 @@
+.page {
+    @apply min-h-screen bg-background text-slate-100 overflow-x-hidden;
+}
+
+.hero {
+    @apply relative min-h-screen flex items-center justify-center pt-24 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden;
+}
+
+.heroBackground {
+    @apply absolute inset-0 overflow-hidden pointer-events-none;
+}
+
+.heroBlob {
+    @apply absolute rounded-full opacity-20 filter blur-3xl animate-pulse;
+}
+
+.blob1 {
+    @apply top-20 left-10 w-72 h-72 bg-primary;
+    animation-duration: 4s;
+}
+
+.blob2 {
+    @apply bottom-40 right-10 w-96 h-96 bg-accent-violet;
+    animation-duration: 7s;
+}
+
+.blob3 {
+    @apply top-1/2 left-1/3 w-64 h-64 bg-accent-cyan;
+    animation-duration: 5s;
+}
+
+.heroContent {
+    @apply relative z-10 max-w-7xl mx-auto text-center;
+}
+
+.heroVisual {
+    @apply mb-16 relative mx-auto max-w-5xl;
+}
+
+.visualCard {
+    @apply bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 shadow-2xl relative overflow-hidden;
+    aspect-ratio: 2.2/1;
+    min-height: 300px;
+}
+
+.heroTitle {
+    @apply text-5xl md:text-7xl font-heading font-extrabold mb-6 tracking-tight leading-tight;
+}
+
+.titleGradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent-emerald to-primary;
+}
+
+.heroSubtitle {
+    @apply text-xl text-slate-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed;
+}
+
+.ctaGroup {
+    @apply flex flex-col sm:flex-row gap-4 justify-center items-center;
+}
+
+.section {
+    @apply py-20 relative;
+}
+
+.sectionTitle {
+    @apply text-3xl md:text-4xl font-heading font-bold mb-6 text-center text-white;
+}
+
+.sectionDesc {
+    @apply text-xl text-slate-400 max-w-3xl mx-auto text-center mb-16;
+}
+
+.featureGrid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4;
+}
+
+.journeyGrid {
+    @apply grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10 max-w-6xl mx-auto px-4;
+}
+
+.journeyLine {
+    @apply hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-emerald/30 via-primary/30 to-accent-violet/30 transform -translate-y-1/2;
+}
+
+.footer {
+    @apply bg-surface py-12 border-t border-white/5;
+}
+
+.footerContent {
+    @apply max-w-7xl mx-auto px-4 text-center;
+}

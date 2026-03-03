@@ -1,0 +1,68 @@
+.page {
+    @apply min-h-screen flex items-center justify-center bg-background relative overflow-hidden;
+}
+
+.backgroundGlow {
+    @apply absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none;
+}
+
+.glowBlob {
+    @apply absolute rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-float;
+}
+
+.blob1 {
+    @apply top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary;
+    animation-delay: 0s;
+}
+
+.blob2 {
+    @apply bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-secondary;
+    animation-delay: -1.5s;
+}
+
+.blob3 {
+    @apply top-[40%] left-[60%] w-[300px] h-[300px] bg-accent-violet;
+    animation-delay: -3s;
+}
+
+.cardWrapper {
+    @apply w-full max-w-md z-10 p-4;
+}
+
+.loginCard {
+    @apply border-white/10 bg-slate-900/40 backdrop-blur-xl shadow-2xl;
+}
+
+.header {
+    @apply text-center mb-6;
+}
+
+.title {
+    @apply text-3xl font-heading font-bold text-white mb-2;
+}
+
+.subtitle {
+    @apply text-slate-400 text-sm;
+}
+
+.form {
+    @apply space-y-4;
+}
+
+.forgotPassword {
+    @apply text-xs text-primary hover:text-primary-hover transition-colors block text-right mt-2;
+}
+
+.divider {
+    @apply flex items-center my-6 text-slate-500 text-xs uppercase font-medium;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    @apply flex-1 h-px bg-slate-800;
+}
+
+.divider span {
+    @apply px-4;
+}

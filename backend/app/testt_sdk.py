@@ -1,0 +1,2 @@
+# GenAI Wellness Companion Application
+

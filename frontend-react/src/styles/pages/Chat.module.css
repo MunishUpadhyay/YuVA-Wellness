@@ -1,0 +1,177 @@
+.page {
+    @apply min-h-screen bg-background pb-20;
+}
+
+.header {
+    @apply py-12 bg-surface/50 border-b border-white/5 mb-8 text-center relative overflow-hidden;
+}
+
+.headerTitle {
+    @apply text-3xl font-heading font-bold mb-2 text-white;
+}
+
+.headerSubtitle {
+    @apply text-slate-400;
+}
+
+.modeToggle {
+    @apply flex justify-center gap-4 mb-8 max-w-4xl mx-auto px-4;
+}
+
+.toggleButton {
+    @apply flex items-center gap-3 px-6 py-4 rounded-xl border-2 transition-all duration-300 w-full md:w-auto md:min-w-[200px];
+}
+
+.toggleActive {
+    @apply bg-primary/10 border-primary text-primary;
+}
+
+.toggleInactive {
+    @apply bg-surface/50 border-white/5 text-slate-400 hover:bg-surface hover:text-white hover:border-white/10;
+}
+
+.container {
+    @apply max-w-3xl mx-auto px-4;
+}
+
+/* Guided Check-in Styles */
+.assessmentCard {
+    @apply bg-surface/80 backdrop-blur-md border border-white/10 rounded-2xl p-6 md:p-10 shadow-2xl animate-fade-in;
+}
+
+.progressContainer {
+    @apply mb-8;
+}
+
+.progressHeader {
+    @apply flex justify-between text-sm text-slate-400 mb-2;
+}
+
+.track {
+    @apply w-full bg-slate-800 h-1.5 rounded-full overflow-hidden;
+}
+
+.bar {
+    @apply bg-primary h-full rounded-full transition-all duration-500 ease-out;
+}
+
+.questionTitle {
+    @apply text-2xl font-medium text-center text-white mb-10 leading-relaxed;
+}
+
+.emojiGrid {
+    @apply flex flex-wrap justify-center gap-4;
+}
+
+.emojiBtn {
+    @apply flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 w-24 h-24 bg-slate-900/50;
+}
+
+.emojiBtnActive {
+    @apply border-primary bg-primary/10 scale-105 shadow-lg shadow-primary/20;
+}
+
+.emojiBtnInactive {
+    @apply border-transparent hover:bg-slate-800 hover:border-white/10 text-slate-400 hover:text-white;
+}
+
+.sliderContainer {
+    @apply w-full py-8 px-4 max-w-md mx-auto;
+}
+
+.rangeInput {
+    @apply w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary;
+}
+
+.choiceGrid {
+    @apply grid gap-3 max-w-md mx-auto;
+}
+
+.choiceBtn {
+    @apply w-full text-left p-4 rounded-xl border transition-all duration-200 bg-slate-900/50;
+}
+
+.choiceBtnActive {
+    @apply border-primary bg-primary/10 text-white shadow-md;
+}
+
+.choiceBtnInactive {
+    @apply border-white/5 hover:bg-slate-800 hover:border-white/10 text-slate-300;
+}
+
+.textArea {
+    @apply w-full h-32 bg-slate-900/80 border border-white/10 rounded-xl p-4 text-white placeholder-slate-500 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all resize-none;
+}
+
+/* Open Chat Styles */
+.chatContainer {
+    @apply bg-surface/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden flex flex-col h-[650px] shadow-2xl;
+}
+
+.chatHeader {
+    @apply bg-slate-900/50 p-4 border-b border-white/5 flex items-center gap-3;
+}
+
+.avatar {
+    @apply w-10 h-10 rounded-full flex items-center justify-center;
+}
+
+.avatarAI {
+    @apply bg-gradient-to-br from-primary to-accent-violet text-white;
+}
+
+.messagesArea {
+    @apply flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth;
+}
+
+.messageRow {
+    @apply flex w-full;
+}
+
+.messageRowUser {
+    @apply justify-end;
+}
+
+.messageRowAI {
+    @apply justify-start;
+}
+
+.bubble {
+    @apply max-w-[85%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm;
+}
+
+.bubbleUser {
+    @apply bg-primary text-white rounded-tr-none;
+}
+
+.bubbleAI {
+    @apply bg-slate-800 text-slate-200 rounded-tl-none border border-white/5;
+}
+
+.inputArea {
+    @apply p-4 bg-slate-900/50 border-t border-white/5;
+}
+
+.inputWrapper {
+    @apply relative;
+}
+
+.chatInput {
+    @apply w-full bg-slate-950 border border-white/10 rounded-xl pl-4 pr-12 py-3.5 text-white placeholder-slate-500 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 outline-none transition-all;
+}
+
+.sendBtn {
+    @apply absolute right-2 bottom-2 p-1.5 text-primary hover:text-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+.quickReplies {
+    @apply px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide;
+}
+
+.quickReplyBtn {
+    @apply whitespace-nowrap px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700 rounded-full text-xs text-slate-300 border border-white/5 transition-colors;
+}
+
+.crisisBanner {
+    @apply bg-red-500/10 border-b border-red-500/20 p-4 flex gap-3 animate-fade-in;
+}

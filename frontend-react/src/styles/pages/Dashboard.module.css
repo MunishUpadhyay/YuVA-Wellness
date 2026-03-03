@@ -1,0 +1,101 @@
+.page {
+    @apply min-h-screen bg-background pb-20;
+}
+
+.header {
+    @apply py-12 bg-surface border-b border-white/5 mb-8 relative overflow-hidden;
+}
+
+.headerContent {
+    @apply max-w-7xl mx-auto px-4 text-center relative z-10;
+}
+
+
+
+.headerTitle {
+    @apply text-4xl md:text-5xl font-heading font-bold mb-4 text-white;
+}
+
+.headerSubtitle {
+    @apply text-xl text-slate-400 max-w-2xl mx-auto;
+}
+
+.section {
+    @apply py-8;
+}
+
+.container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.sectionHeader {
+    @apply text-center mb-12;
+}
+
+.sectionTitle {
+    @apply text-3xl font-heading font-bold text-white mb-4;
+}
+
+.sectionDesc {
+    @apply text-slate-400;
+}
+
+.gridContainer {
+    @apply grid grid-cols-1 gap-6;
+}
+
+.grid2 {
+    @apply md:grid-cols-2;
+}
+
+.grid3 {
+    @apply lg:grid-cols-3;
+}
+
+.grid4 {
+    @apply md:grid-cols-2 lg:grid-cols-4;
+}
+
+.sessionCard {
+    @apply cursor-pointer transition-all duration-300 hover:-translate-y-1;
+}
+
+.iconWrapper {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300;
+}
+
+.progressItem {
+    @apply mb-4;
+}
+
+.progressLabel {
+    @apply flex justify-between items-center mb-2 text-sm;
+}
+
+.progressBar {
+    @apply w-full bg-slate-800 rounded-full h-2 overflow-hidden;
+}
+
+.progressFill {
+    @apply h-full rounded-full transition-all duration-1000;
+}
+
+.modalOverlay {
+    @apply fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in;
+}
+
+.modalContent {
+    @apply bg-surface border border-white/10 rounded-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto shadow-2xl;
+}
+
+.stepItem {
+    @apply flex items-start gap-4 bg-slate-900/50 p-4 rounded-lg border border-white/5;
+}
+
+.stepNumber {
+    @apply bg-primary/20 text-primary w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0;
+}
+
+.toast {
+    @apply fixed top-20 right-4 p-4 rounded-lg shadow-lg text-white z-50 animate-fade-in flex items-center gap-3 border border-white/10;
+}

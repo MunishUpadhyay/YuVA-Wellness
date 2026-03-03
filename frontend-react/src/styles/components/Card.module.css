@@ -1,0 +1,31 @@
+.card {
+    @apply rounded-xl border bg-surface text-slate-100 shadow-sm relative overflow-hidden;
+}
+
+.glass {
+    @apply bg-slate-900/60 backdrop-blur-xl border-white/10 shadow-xl;
+}
+
+.hover-glow {
+    @apply transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10;
+}
+
+.header {
+    @apply flex flex-col space-y-1.5 p-6;
+}
+
+.title {
+    @apply font-heading text-2xl font-semibold leading-none tracking-tight text-white;
+}
+
+.description {
+    @apply text-sm text-slate-400;
+}
+
+.content {
+    @apply p-6 pt-0;
+}
+
+.footer {
+    @apply flex items-center p-6 pt-0;
+}

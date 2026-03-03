@@ -1,0 +1,140 @@
+.page {
+    @apply min-h-screen bg-background pb-20;
+}
+
+.header {
+    @apply py-12 bg-surface/50 border-b border-white/5 mb-8 text-center relative overflow-hidden;
+}
+
+.headerIcon {
+    @apply inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-accent-violet rounded-2xl mb-6 shadow-lg shadow-primary/20;
+}
+
+.headerTitle {
+    @apply text-3xl font-heading font-bold mb-4 text-white;
+}
+
+.headerSubtitle {
+    @apply text-xl text-slate-400 max-w-2xl mx-auto;
+}
+
+.container {
+    @apply max-w-7xl mx-auto px-4;
+}
+
+/* Controls */
+.controls {
+    @apply py-8 text-center flex justify-center;
+}
+
+.controlsWrapper {
+    @apply bg-slate-900/50 rounded-xl p-1 inline-flex border border-white/5;
+}
+
+.timeBtn {
+    @apply px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200;
+}
+
+.timeBtnActive {
+    @apply bg-primary text-white shadow-lg;
+}
+
+.timeBtnInactive {
+    @apply text-slate-400 hover:text-white hover:bg-white/5;
+}
+
+/* Metrics Grid */
+.metricsGrid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-6;
+}
+
+.metricCard {
+    @apply bg-surface/50 backdrop-blur-md border border-white/5 rounded-xl p-6 text-center hover:bg-surface hover:border-white/10 transition-all hover:-translate-y-1 relative overflow-hidden;
+}
+
+.metricIcon {
+    @apply w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg transition-transform;
+}
+
+.metricTitle {
+    @apply text-slate-400 text-sm font-medium mb-1 uppercase tracking-wider;
+}
+
+.metricValue {
+    @apply text-3xl font-bold text-white mb-1;
+}
+
+.metricSubtext {
+    @apply text-xs text-slate-500 font-medium;
+}
+
+/* Charts Grid */
+.chartsGrid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-8 py-8;
+}
+
+.chartCard {
+    @apply bg-surface/50 border border-white/5 rounded-xl p-6 hover:border-white/10 transition-colors;
+}
+
+.chartTitle {
+    @apply text-xl font-bold text-white mb-6 flex items-center gap-2;
+}
+
+.chartContainer {
+    @apply h-64 w-full relative;
+}
+
+.chartContainerCenter {
+    @apply h-64 w-full relative flex justify-center items-center;
+}
+
+/* Insights Section */
+.insightsSection {
+    @apply py-12;
+}
+
+.insightsTitle {
+    @apply text-center mb-12;
+}
+
+.insightsGrid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-8;
+}
+
+.insightCard {
+    @apply bg-surface/50 border border-white/5 rounded-xl p-6 hover:border-white/10 transition-colors h-full;
+}
+
+.insightHeader {
+    @apply text-xl font-bold text-white mb-6 flex items-center gap-2;
+}
+
+.insightItem {
+    @apply p-4 bg-slate-900/30 rounded-lg text-sm text-slate-300 flex items-start gap-3 border border-white/5 mb-3 last:mb-0;
+}
+
+.progressContainer {
+    @apply p-6 bg-accent-violet/10 border border-accent-violet/20 rounded-xl text-center;
+}
+
+/* Tabs Section */
+.tabsSection {
+    @apply py-12 bg-surface/30 mt-12;
+}
+
+.tabBtn {
+    @apply px-6 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-200;
+}
+
+.tabContent {
+    @apply bg-surface/50 rounded-xl p-8 border border-white/5 min-h-[300px] mt-8;
+}
+
+.emptyChart {
+    @apply h-64 bg-slate-900/30 rounded-lg flex flex-col items-center justify-center border border-white/5 border-dashed text-slate-500;
+}
+
+.dailySummary {
+    @apply bg-gradient-to-br from-primary/10 to-accent-violet/10 rounded-2xl p-8 border border-primary/20 text-center mt-12 max-w-4xl mx-auto;
+}
