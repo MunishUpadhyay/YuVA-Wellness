@@ -34,9 +34,16 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             import traceback
             traceback.print_exc()
             logger.exception("Unhandled error")
+            
+            error_msg = "Internal server error"
+            from app.core.config import get_settings
+            settings = get_settings()
+            if settings.debug or settings.environment == "development":
+                error_msg = f"Developer Error: {str(exc)}"
+                
             return JSONResponse(
                 status_code=500,
-                content={"error": "Internal server error", "status_code": 500}
+                content={"error": error_msg, "status_code": 500}
             )
 
 

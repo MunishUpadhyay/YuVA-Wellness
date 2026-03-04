@@ -67,18 +67,39 @@ async def api_status():
     try:
         from app.db.session import get_db
         from sqlalchemy import text
+        from app.db.models.user import User
+        from app.db.models.otp import OTP
         
         # Use the dependency to get a session
         async for session in get_db():
             await session.execute(text("SELECT 1"))
             db_status = "connected"
+            
+            # Check tables
+            try:
+                await session.execute(text("SELECT count(*) FROM users"))
+                users_table = "ok"
+            except:
+                users_table = "missing"
+                
+            try:
+                await session.execute(text("SELECT count(*) FROM otp_codes"))
+                otp_table = "ok"
+            except:
+                otp_table = "missing"
             break
     except Exception as e:
         db_status = f"error: {str(e)}"
+        users_table = "unknown"
+        otp_table = "unknown"
     
     return {
         "api": "online",
         "database": db_status,
+        "tables": {
+            "users": users_table,
+            "otp_codes": otp_table
+        },
         "version": "1.0.0",
         "environment": settings.environment,
         "cors": {
