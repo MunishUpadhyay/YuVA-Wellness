@@ -83,7 +83,9 @@ class AuthService:
         
         sent = EmailService.send_otp_email(email, code)
         if not sent:
-             raise HTTPException(status_code=500, detail="Failed to send OTP email")
+             msg = f"------------ [DEBUG] 2FA OTP for {email}: {code} ------------"
+             print(msg, flush=True)
+             logger.warning(f"Email sending failed or was skipped. OTP logged to console as fallback.")
 
         # Invalidate previous OTPs
         await db.execute(delete(OTP).where(OTP.user_id == user_id))
