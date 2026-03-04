@@ -291,6 +291,8 @@ const Login = () => {
                                 <div className="space-y-2">
                                     <Input
                                         type="email"
+                                        name="email"
+                                        autoComplete="email"
                                         placeholder="Email Address"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -305,6 +307,8 @@ const Login = () => {
                                 <div className="space-y-4 animate-fade-in">
                                     <Input
                                         type="text"
+                                        name="otp"
+                                        autoComplete="one-time-code"
                                         placeholder="0 0 0 0 0 0"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
@@ -321,6 +325,8 @@ const Login = () => {
                                     <div className="space-y-2 relative">
                                         <Input
                                             type={showPassword ? "text" : "password"}
+                                            name="new-password"
+                                            autoComplete="new-password"
                                             placeholder="New Password"
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
@@ -339,6 +345,8 @@ const Login = () => {
                                     <div className="space-y-2 relative">
                                         <Input
                                             type={showPassword ? "text" : "password"}
+                                            name="confirm-password"
+                                            autoComplete="new-password"
                                             placeholder="Confirm Password"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -385,6 +393,8 @@ const Login = () => {
                                 <div className="grid grid-cols-2 gap-4 animate-fade-in">
                                     <div className="space-y-2">
                                         <Input
+                                            name="firstName"
+                                            autoComplete="given-name"
                                             placeholder="First Name"
                                             value={firstName}
                                             onChange={(e) => setFirstName(e.target.value)}
@@ -394,6 +404,8 @@ const Login = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <Input
+                                            name="lastName"
+                                            autoComplete="family-name"
                                             placeholder="Last Name (Optional)"
                                             value={lastName}
                                             onChange={(e) => setLastName(e.target.value)}
@@ -407,6 +419,8 @@ const Login = () => {
                             <div className="space-y-2">
                                 <Input
                                     type="email"
+                                    name="email"
+                                    autoComplete={isLogin ? "username" : "email"}
                                     placeholder="Email Address"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -421,6 +435,8 @@ const Login = () => {
                                 <div className="space-y-2 relative">
                                     <Input
                                         type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        autoComplete={isLogin ? "current-password" : "new-password"}
                                         placeholder="Password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -462,6 +478,8 @@ const Login = () => {
                                     </div>
                                     <Input
                                         type="text"
+                                        name="otp"
+                                        autoComplete="one-time-code"
                                         placeholder="0 0 0 0 0 0"
                                         value={otp}
                                         onChange={(e) => setOtp(e.target.value)}
