@@ -29,7 +29,7 @@ app.add_middleware(LoggingMiddleware)
 # Add CORS middleware for static frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all domains in production (Vercel URL)
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
