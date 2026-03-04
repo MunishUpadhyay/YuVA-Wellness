@@ -10,7 +10,7 @@ import time
 import hashlib
 from typing import Dict, Optional, Any, Tuple
 from collections import defaultdict, deque
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 from fastapi import HTTPException, Request, status
@@ -74,9 +74,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """Create a long-lived access token for authenticated users."""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire, "scope": "access"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -85,7 +85,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def create_temp_token(data: dict) -> str:
     """Create a short-lived temporary token for OTP stage."""
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=TEMP_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=TEMP_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire, "scope": "otp_stage"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

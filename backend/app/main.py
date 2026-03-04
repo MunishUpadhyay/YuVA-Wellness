@@ -58,12 +58,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring"""
-    return {
-        "status": "healthy",
-        "version": "1.0.0",
-        "service": "YuVA Wellness API",
-        "environment": settings.environment
-    }
+    return {"status": "ok"}
 
 @app.get("/api/status")
 async def api_status():

@@ -11,9 +11,11 @@ import { Badge } from '../../components/ui/Badge';
 import { cn } from '../../utils/utils';
 import PageHeader from '../../components/layout/PageHeader';
 import ReactMarkdown from 'react-markdown';
+import { useChat } from './ChatContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Chat = () => {
-    const [mode, setMode] = useState('assessment'); // 'assessment' | 'chat'
+    const { mode, setMode } = useChat();
 
     return (
         <div className={styles.page}>
@@ -51,11 +53,22 @@ const Chat = () => {
 
             {/* Content */}
             <section className={styles.container}>
-                {mode === 'assessment' ? (
-                    <GuidedCheckIn onSwitchToChat={() => setMode('chat')} />
-                ) : (
-                    <OpenChat />
-                )}
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={mode}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full"
+                    >
+                        {mode === 'assessment' ? (
+                            <GuidedCheckIn onSwitchToChat={() => setMode('chat')} />
+                        ) : (
+                            <OpenChat />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </section>
         </div>
     );
@@ -63,9 +76,14 @@ const Chat = () => {
 
 // --- Guided Check-in Component ---
 const GuidedCheckIn = ({ onSwitchToChat }) => {
-    const [step, setStep] = useState(0);
-    const [answers, setAnswers] = useState({});
-    const [completed, setCompleted] = useState(false);
+    const {
+        assessmentStep: step,
+        setAssessmentStep: setStep,
+        assessmentAnswers: answers,
+        setAssessmentAnswers: setAnswers,
+        assessmentCompleted: completed,
+        setAssessmentCompleted: setCompleted
+    } = useChat();
 
     const questions = [
         {
@@ -400,12 +418,17 @@ const GuidedCheckIn = ({ onSwitchToChat }) => {
 
 // --- Open Chat Component ---
 const OpenChat = () => {
-    const [messages, setMessages] = useState([
-        { sender: 'assistant', text: "Hello! I'm here to listen and support you. What's been on your mind today?", timestamp: new Date() }
-    ]);
-    const [input, setInput] = useState('');
+    const {
+        messages,
+        setMessages,
+        chatInput: input,
+        setChatInput: setInput,
+        crisisDetected,
+        setCrisisDetected,
+        clearChat
+    } = useChat();
+
     const [typing, setTyping] = useState(false);
-    const [crisisDetected, setCrisisDetected] = useState(false);
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -413,8 +436,11 @@ const OpenChat = () => {
     };
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages, typing]);
+        // Scroll to bottom only if there are messages or typing state changes
+        // Use a small delay to ensure DOM is ready
+        const timer = setTimeout(scrollToBottom, 50);
+        return () => clearTimeout(timer);
+    }, [messages.length, typing]);
 
     // Enhanced crisis keywords
     const crisisKeywords = [
@@ -568,7 +594,7 @@ const OpenChat = () => {
                 </div>
                 <div className="flex justify-between mt-3 text-[10px] text-slate-500 px-2 uppercase tracking-wider font-semibold">
                     <span className="flex items-center gap-1"><Shield size={10} /> Private & Secure</span>
-                    <button onClick={() => setMessages([])} className="hover:text-slate-300 transition-colors">Clear chat</button>
+                    <button onClick={clearChat} className="hover:text-slate-300 transition-colors">Clear chat</button>
                 </div>
             </div>
         </div>

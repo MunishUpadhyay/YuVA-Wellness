@@ -47,6 +47,20 @@ class ResendOTPRequest(BaseModel):
     """Resend OTP using temp token"""
     temp_token: str
 
+class ForgotPasswordRequest(BaseModel):
+    """Stage 1 Forgot Password: Email submission"""
+    email: EmailStr
+
+class VerifyResetOTPRequest(BaseModel):
+    """Stage 2 Forgot Password: OTP verification"""
+    reset_token: str
+    otp: str
+
+class ResetPasswordRequest(BaseModel):
+    """Stage 3 Forgot Password: Set new password"""
+    reset_token: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
 # Response schemas
 
 class UserResponse(BaseModel):

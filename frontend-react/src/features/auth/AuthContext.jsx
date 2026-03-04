@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import ApiClient from '../../services/apiClient';
 import { API_ENDPOINTS } from '../../constants/api';
 
@@ -18,7 +18,22 @@ export const AuthProvider = ({ children }) => {
 
                 if (result.success && result.data) {
                     console.log('[AuthContext] ✅ Authenticated! User:', result.data);
-                    setUser(result.data);
+
+                    let restoredUser = result.data;
+                    const token = localStorage.getItem('access_token');
+                    if (token) {
+                        try {
+                            const { jwtDecode } = await import('jwt-decode');
+                            const decoded = jwtDecode(token);
+                            restoredUser = {
+                                ...restoredUser,
+                                first_name: restoredUser.first_name || decoded.first_name
+                            };
+                        } catch (e) {
+                            console.error('Failed to decode token on checkSession', e);
+                        }
+                    }
+                    setUser(restoredUser);
                 } else {
                     console.log('[AuthContext] ❌ Not authenticated (Result success: false or no data)');
                     setUser(null);
@@ -93,10 +108,10 @@ export const AuthProvider = ({ children }) => {
                         const decoded = jwtDecode(result.data.access_token);
                         console.log('[AuthContext] Decoded token:', decoded);
 
-                        // Merge decoded data with user response if needed
+                        // Merge decoded data with user response safely
                         const userWithProfile = {
                             ...result.data.user,
-                            first_name: decoded.first_name || result.data.user.first_name
+                            first_name: result.data.user?.first_name || decoded.first_name || result.data.user?.email?.split('@')[0]
                         };
                         setUser(userWithProfile);
                     } catch (e) {
@@ -184,6 +199,33 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const forgotPassword = async (email) => {
+        try {
+            const result = await ApiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+            return result;
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const verifyResetOTP = async (resetToken, otp) => {
+        try {
+            const result = await ApiClient.post(API_ENDPOINTS.AUTH.VERIFY_RESET_OTP, { reset_token: resetToken, otp: otp });
+            return result;
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const resetPassword = async (resetToken, newPassword) => {
+        try {
+            const result = await ApiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, { reset_token: resetToken, new_password: newPassword });
+            return result;
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
     const logout = async () => {
         try {
             await ApiClient.post(API_ENDPOINTS.AUTH.LOGOUT, {});
@@ -195,7 +237,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, error, login, register, loginAsGuest, logout, setUser, generateOTP, verifyOTP, resendOTP }}>
+        <AuthContext.Provider value={{ user, loading, error, login, register, loginAsGuest, logout, setUser, generateOTP, verifyOTP, resendOTP, forgotPassword, verifyResetOTP, resetPassword }}>
             {children}
         </AuthContext.Provider>
     );

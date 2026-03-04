@@ -28,4 +28,5 @@ class OTP(Base):
     
     def is_valid(self) -> bool:
         """Check if OTP is valid (not used, not expired, attempts < 5)"""
-        return not self.is_used and self.attempts < 5 and self.expires_at > datetime.utcnow()
+        from datetime import timezone
+        return not self.is_used and self.attempts < 5 and self.expires_at > datetime.now(timezone.utc)

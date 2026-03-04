@@ -11,12 +11,14 @@ from app.core.config import get_settings
 from app.schemas.auth import (
     RegisterRequest, LoginRequest, AuthResponse, 
     GuestResponse, LogoutResponse, UserResponse,
-    OTPGenerateRequest, OTPVerifyRequest, ResendOTPRequest
+    OTPGenerateRequest, OTPVerifyRequest, ResendOTPRequest,
+    ForgotPasswordRequest, VerifyResetOTPRequest, ResetPasswordRequest
 )
 from app.services.auth_service import AuthService
 from app.core.security import create_access_token, create_temp_token, decode_token, verify_token_scope
 from .deps import get_current_user, get_client_id_from_request
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +95,6 @@ async def verify_otp(
     if not user_id_str:
         raise HTTPException(status_code=401, detail="Invalid token")
         
-    import uuid
     user_id = uuid.UUID(user_id_str)
     
     # 2. Verify OTP
@@ -122,14 +123,6 @@ async def verify_otp(
         }
     )
     
-    # Set cookie for backward compatibility (optional, but good for hybrid)
-    # But strictly 2FA flow usually relies on Bearer.
-    # User said: "Store access_token in localStorage."
-    # We will still set cookie for 'client_id' if needed? 
-    # Actually, for registered users, we should use the User object.
-    # But get_current_user usually looks at cookie.
-    # We will update get_current_user to look at Bearer token first.
-    
     return AuthResponse(
         user=UserResponse.model_validate(user),
         message="Login successful",
@@ -150,7 +143,6 @@ async def resend_otp(
     verify_token_scope(payload, "otp_stage")
     user_id_str = payload.get("sub")
     
-    import uuid
     user_id = uuid.UUID(user_id_str)
     
     # 2. Generate new OTP
@@ -187,6 +179,103 @@ async def resend_otp(
         message="OTP resent successfully.",
         requires_otp=True,
         temp_token=temp_token
+    )
+
+@router.post("/forgot-password", response_model=AuthResponse)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Stage 1: Request OTP for password reset"""
+    user = await AuthService.get_user_by_identifier(db, request.email)
+    
+    # Always return success to prevent email enumeration attacks
+    if not user or user.is_guest:
+        return AuthResponse(
+            message="If your email is registered, you will receive an OTP shortly.",
+            requires_otp=True,
+            temp_token="fake_token"
+        )
+        
+    otp_code = await AuthService.generate_otp(db, user.id, user.email)
+    
+    msg = f"------------ PASSWORD RESET OTP for {user.email}: {otp_code} ------------"
+    print(msg, flush=True)
+    logger.info(msg)
+    
+    reset_token_stage1 = create_temp_token(
+        data={"sub": str(user.id), "stage": "password_reset_stage1"}
+    )
+    
+    return AuthResponse(
+        message="OTP sent to your registered contact.",
+        requires_otp=True,
+        temp_token=reset_token_stage1
+    )
+
+@router.post("/verify-reset-otp", response_model=AuthResponse)
+async def verify_reset_otp(
+    request: VerifyResetOTPRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Stage 2: Verify OTP for password reset"""
+    # 1. Validate temp token
+    payload = decode_token(request.reset_token)
+    verify_token_scope(payload, "otp_stage")
+    
+    if payload.get("stage") != "password_reset_stage1":
+        raise HTTPException(status_code=401, detail="Invalid token stage")
+        
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        raise HTTPException(status_code=401, detail="Invalid token")
+        
+    user_id = uuid.UUID(user_id_str)
+    
+    # 2. Verify OTP
+    is_valid = await AuthService.verify_otp(db, user_id, request.otp)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Invalid or expired OTP"
+        )
+        
+    # 3. Issue stage 2 token allowing password change
+    reset_token_stage2 = create_temp_token(
+        data={"sub": str(user_id), "stage": "password_reset_stage2"}
+    )
+    
+    return AuthResponse(
+        message="OTP verified. Proceed to reset password.",
+        temp_token=reset_token_stage2,
+        requires_otp=False
+    )
+
+@router.post("/reset-password", response_model=AuthResponse)
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Stage 3: Save new password"""
+    payload = decode_token(request.reset_token)
+    verify_token_scope(payload, "otp_stage")
+    
+    if payload.get("stage") != "password_reset_stage2":
+        raise HTTPException(status_code=401, detail="Invalid token stage or expired")
+        
+    user_id_str = payload.get("sub")
+    user_id = uuid.UUID(user_id_str)
+    
+    success, msg = await AuthService.update_password(db, user_id, request.new_password)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=msg
+        )
+        
+    return AuthResponse(
+        message="Password reset successfully."
     )
 
 @router.post("/guest", response_model=GuestResponse)
@@ -286,7 +375,6 @@ async def check_existing_session(
             user_id = payload.get("sub")
             if user_id:
                 # Fetch user
-                import uuid
                 from app.db.models.user import User
                 from sqlalchemy import select
                 result = await db.execute(select(User).where(User.id == uuid.UUID(user_id)))

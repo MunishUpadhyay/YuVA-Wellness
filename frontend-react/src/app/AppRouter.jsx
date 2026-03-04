@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from '../features/auth/AuthContext';
 import ProtectedRoute from '../features/auth/ProtectedRoute';
 import { AnimatePresence } from 'framer-motion';
+import { ChatProvider } from '../features/chat/ChatContext';
 
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -58,7 +60,9 @@ const AppRouter = () => {
     return (
         <Router>
             <AuthProvider>
-                <AnimatedRoutes />
+                <ChatProvider>
+                    <AnimatedRoutes />
+                </ChatProvider>
             </AuthProvider>
         </Router>
     );

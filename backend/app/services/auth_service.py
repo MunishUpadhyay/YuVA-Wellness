@@ -3,7 +3,7 @@ Authentication business logic for YuVA Wellness
 """
 import uuid
 from typing import Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import secrets
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -75,7 +75,7 @@ class AuthService:
         # Generate 6-digit code
         code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
         code_hash = hash_otp(code)
-        expires_at = datetime.utcnow() + timedelta(minutes=5)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
         
         # Try sending email BEFORE committing to DB (or after? Requirements say "OTP is not stored if email sending fails")
         # So we should send first? Or send then commit? 
@@ -112,8 +112,8 @@ class AuthService:
             select(OTP).where(
                 OTP.user_id == user_id,
                 OTP.is_used == False,
-                OTP.expires_at > datetime.utcnow()
-            ).order_by(desc(OTP.created_at))
+                OTP.expires_at > datetime.now(timezone.utc)
+            ).order_by(desc(OTP.expires_at))
         )
         otp_entry = result.scalars().first()
         
@@ -184,3 +184,25 @@ class AuthService:
         except IntegrityError:
             await db.rollback()
             return None, "User already registered"
+
+    @staticmethod
+    async def update_password(db: AsyncSession, user_id: uuid.UUID, new_password: str) -> Tuple[bool, str]:
+        """
+        Update a user's password (e.g., for password rest).
+        """
+        # Validate password strength
+        is_valid, error_msg = is_password_strong(new_password)
+        if not is_valid:
+            return False, error_msg
+
+        # Fetch user
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return False, "User not found"
+
+        # Update password
+        user.password_hash = hash_password(new_password)
+        await db.commit()
+        return True, "Password updated successfully"

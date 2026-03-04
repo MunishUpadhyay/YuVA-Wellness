@@ -10,6 +10,8 @@ import { cn } from '../utils/utils';
 
 const Login = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
 
     // Form States
     const [email, setEmail] = useState('');
@@ -17,6 +19,9 @@ const Login = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [otp, setOtp] = useState('');
+    const [resetToken, setResetToken] = useState(null);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     // UI States
     const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +31,7 @@ const Login = () => {
     const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
     const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
 
-    const { login, register, loginAsGuest, verifyOTP, resendOTP } = useAuth();
+    const { login, register, loginAsGuest, verifyOTP, resendOTP, forgotPassword, verifyResetOTP, resetPassword } = useAuth();
     const navigate = useNavigate();
 
     const clearState = () => {
@@ -36,6 +41,10 @@ const Login = () => {
         setRequiresTwoFactor(false);
         setFirstName('');
         setLastName('');
+        setForgotPasswordStep(1);
+        setResetToken(null);
+        setNewPassword('');
+        setConfirmPassword('');
     };
 
     const handleSubmit = async (e) => {
@@ -48,7 +57,7 @@ const Login = () => {
             if (!isLogin) {
                 const result = await register(email, password, firstName, lastName);
                 if (result.success) {
-                    setMessage({ text: 'Account created! Switching to login...', type: 'success' });
+                    setMessage({ text: 'Account created successfully! Switching to login...', type: 'success' });
                     setTimeout(() => {
                         setIsLogin(true);
                         setPassword('');
@@ -110,7 +119,75 @@ const Login = () => {
 
     const toggleMode = () => {
         setIsLogin(!isLogin);
+        setIsForgotPassword(false);
         clearState();
+    };
+
+    const handleForgotPasswordSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage({ text: '', type: '' });
+
+        try {
+            if (forgotPasswordStep === 1) {
+                // Step 1: Send Email
+                if (!email) {
+                    setMessage({ text: 'Please enter your email address.', type: 'error' });
+                    setLoading(false);
+                    return;
+                }
+                const res = await forgotPassword(email);
+                if (res.success && res.data) {
+                    setResetToken(res.data.temp_token);
+                    setForgotPasswordStep(2);
+                    setMessage({ text: res.data.message || 'OTP sent successfully.', type: 'info' });
+                } else {
+                    setMessage({ text: res.error || 'Failed to send reset email.', type: 'error' });
+                }
+            } else if (forgotPasswordStep === 2) {
+                // Step 2: Verify OTP
+                if (!otp) {
+                    setMessage({ text: 'Please enter the OTP.', type: 'error' });
+                    setLoading(false);
+                    return;
+                }
+                const res = await verifyResetOTP(resetToken, otp);
+                if (res.success && res.data) {
+                    setResetToken(res.data.temp_token); // Stage 2 token
+                    setForgotPasswordStep(3);
+                    setMessage({ text: 'OTP verified. Please enter your new password.', type: 'success' });
+                } else {
+                    setMessage({ text: res.error || 'Invalid OTP.', type: 'error' });
+                }
+            } else if (forgotPasswordStep === 3) {
+                // Step 3: Reset Password
+                if (!newPassword || newPassword.length < 8) {
+                    setMessage({ text: 'Password must be at least 8 characters.', type: 'error' });
+                    setLoading(false);
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    setMessage({ text: 'Passwords do not match.', type: 'error' });
+                    setLoading(false);
+                    return;
+                }
+                const res = await resetPassword(resetToken, newPassword);
+                if (res.success) {
+                    setMessage({ text: 'Password reset successfully! Please log in.', type: 'success' });
+                    setTimeout(() => {
+                        setIsForgotPassword(false);
+                        setIsLogin(true);
+                        clearState();
+                    }, 2000);
+                } else {
+                    setMessage({ text: res.error || 'Failed to reset password.', type: 'error' });
+                }
+            }
+        } catch (err) {
+            setMessage({ text: 'An unexpected error occurred.', type: 'error' });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -171,13 +248,19 @@ const Login = () => {
 
                     <div className="text-center lg:text-left">
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            {isLogin ? 'Welcome Back' : 'Create Account'}
+                            {isForgotPassword ? (
+                                forgotPasswordStep === 1 ? 'Reset Password' :
+                                    forgotPasswordStep === 2 ? 'Verify OTP' :
+                                        'New Password'
+                            ) : (isLogin ? 'Welcome Back' : 'Create Account')}
                         </h1>
                         <p className="text-slate-400">
-                            {isLogin
-                                ? 'Sign in to access your wellness dashboard'
-                                : 'Start your journey with us today'
-                            }
+                            {isForgotPassword ? (
+                                forgotPasswordStep === 1 ? 'Enter your email to receive recovery instructions' :
+                                    forgotPasswordStep === 2 ? 'Enter the 6-digit code sent to your email' :
+                                        'Enter a new secure password for your account'
+                            )
+                                : (isLogin ? 'Sign in to access your wellness dashboard' : 'Start your journey with us today')}
                         </p>
                     </div>
 
@@ -201,119 +284,230 @@ const Login = () => {
                         </div>
                     </div>
 
-                    {/* Auth Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Registration Fields */}
-                        {!isLogin && (
-                            <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                    {/* Auth Form / Forgot Password Form */}
+                    {isForgotPassword ? (
+                        <form onSubmit={handleForgotPasswordSubmit} className="space-y-4 animate-fade-in">
+                            {forgotPasswordStep === 1 && (
                                 <div className="space-y-2">
                                     <Input
-                                        placeholder="First Name"
-                                        value={firstName}
-                                        onChange={(e) => setFirstName(e.target.value)}
+                                        type="email"
+                                        placeholder="Email Address"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         required
                                         disabled={loading}
+                                        icon={User}
                                     />
                                 </div>
-                                <div className="space-y-2">
+                            )}
+
+                            {forgotPasswordStep === 2 && (
+                                <div className="space-y-4 animate-fade-in">
                                     <Input
-                                        placeholder="Last Name (Optional)"
-                                        value={lastName}
-                                        onChange={(e) => setLastName(e.target.value)}
+                                        type="text"
+                                        placeholder="0 0 0 0 0 0"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        required
+                                        className="text-center tracking-widest text-2xl h-14 font-mono"
+                                        maxLength={6}
                                         disabled={loading}
                                     />
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Email */}
-                        <div className="space-y-2">
-                            <Input
-                                type="email"
-                                placeholder="Email Address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                disabled={loading || requiresTwoFactor}
-                                icon={User}
-                            />
-                        </div>
+                            {forgotPasswordStep === 3 && (
+                                <div className="space-y-4 animate-fade-in">
+                                    <div className="space-y-2 relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="New Password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            required
+                                            disabled={loading}
+                                            minLength={8}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2 relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Confirm Password"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                            disabled={loading}
+                                            minLength={8}
+                                        />
+                                    </div>
+                                </div>
+                            )}
 
-                        {/* Password */}
-                        {!requiresTwoFactor && (
-                            <div className="space-y-2 relative">
-                                <Input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    disabled={loading}
-                                    minLength={isLogin ? undefined : 8}
-                                />
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                ) : (
+                                    forgotPasswordStep === 1 ? 'Send Reset Instructions' :
+                                        forgotPasswordStep === 2 ? 'Verify OTP' :
+                                            'Update Password'
+                                )}
+                            </Button>
+
+                            <div className="text-center mt-4">
                                 <button
                                     type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors"
+                                    onClick={() => {
+                                        setIsForgotPassword(false);
+                                        clearState();
+                                    }}
+                                    className="text-sm text-slate-400 hover:text-white transition-colors"
                                 >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    Back to Login
                                 </button>
                             </div>
-                        )}
-
-                        {/* OTP Field */}
-                        {requiresTwoFactor && (
-                            <div className="space-y-4 animate-fade-in">
-                                <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary-light text-center">
-                                    Enter the 6-digit code sent to <strong>{email}</strong>
+                        </form>
+                    ) : (
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Registration Fields */}
+                            {!isLogin && (
+                                <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                                    <div className="space-y-2">
+                                        <Input
+                                            placeholder="First Name"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                            required
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Input
+                                            placeholder="Last Name (Optional)"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            disabled={loading}
+                                        />
+                                    </div>
                                 </div>
+                            )}
+
+                            {/* Email */}
+                            <div className="space-y-2">
                                 <Input
-                                    type="text"
-                                    placeholder="0 0 0 0 0 0"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
+                                    type="email"
+                                    placeholder="Email Address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="text-center tracking-widest text-2xl h-14 font-mono"
-                                    maxLength={6}
+                                    disabled={loading || requiresTwoFactor}
+                                    icon={User}
                                 />
-                                <div className="flex justify-center">
+                            </div>
+
+                            {/* Password */}
+                            {!requiresTwoFactor && (
+                                <div className="space-y-2 relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="Password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        disabled={loading}
+                                        minLength={isLogin ? undefined : 8}
+                                    />
                                     <button
                                         type="button"
-                                        onClick={async () => {
-                                            setLoading(true);
-                                            const res = await resendOTP(tempToken);
-                                            if (res.success) {
-                                                if (res.data && res.data.temp_token) {
-                                                    setTempToken(res.data.temp_token);
-                                                }
-                                                setMessage({ text: 'Code resent successfully!', type: 'success' });
-                                            } else {
-                                                setMessage({ text: res.error || 'Failed to resend code.', type: 'error' });
-                                            }
-                                            setLoading(false);
-                                        }}
-                                        className="text-sm text-primary hover:underline"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors"
                                     >
-                                        Resend Code
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Submit Button */}
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            ) : (
-                                requiresTwoFactor ? 'Verify Securely' : (isLogin ? 'Sign In' : 'Create Account')
                             )}
-                        </Button>
-                    </form>
+
+                            {/* Forgot Password Link */}
+                            {isLogin && !requiresTwoFactor && (
+                                <div className="flex justify-end mt-1 mb-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsForgotPassword(true);
+                                            setMessage({ text: '', type: '' });
+                                        }}
+                                        className="text-xs text-primary hover:text-primary-light transition-colors"
+                                    >
+                                        Forgot password?
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* OTP Field */}
+                            {requiresTwoFactor && (
+                                <div className="space-y-4 animate-fade-in">
+                                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary-light text-center">
+                                        Enter the 6-digit code sent to <strong>{email}</strong>
+                                    </div>
+                                    <Input
+                                        type="text"
+                                        placeholder="0 0 0 0 0 0"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        required
+                                        className="text-center tracking-widest text-2xl h-14 font-mono"
+                                        maxLength={6}
+                                    />
+                                    <div className="flex justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                setLoading(true);
+                                                const res = await resendOTP(tempToken);
+                                                if (res.success) {
+                                                    if (res.data && res.data.temp_token) {
+                                                        setTempToken(res.data.temp_token);
+                                                    }
+                                                    setMessage({ text: 'Code resent successfully!', type: 'success' });
+                                                } else {
+                                                    setMessage({ text: res.error || 'Failed to resend code.', type: 'error' });
+                                                }
+                                                setLoading(false);
+                                            }}
+                                            className="text-sm text-primary hover:underline"
+                                        >
+                                            Resend Code
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Submit Button */}
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                className="w-full h-12 text-base font-medium shadow-lg shadow-primary/20"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                ) : (
+                                    requiresTwoFactor ? 'Verify Securely' : (isLogin ? 'Sign In' : 'Create Account')
+                                )}
+                            </Button>
+                        </form>
+                    )}
 
                     {/* Error Messages */}
                     {message.text && (
@@ -330,15 +524,17 @@ const Login = () => {
                     )}
 
                     {/* Toggle */}
-                    <div className="text-center text-sm text-slate-400">
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <button
-                            onClick={toggleMode}
-                            className="text-primary hover:text-primary-light font-medium transition-colors"
-                        >
-                            {isLogin ? 'Sign up for free' : 'Log in'}
-                        </button>
-                    </div>
+                    {!isForgotPassword && (
+                        <div className="text-center text-sm text-slate-400">
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <button
+                                onClick={toggleMode}
+                                className="text-primary hover:text-primary-light font-medium transition-colors"
+                            >
+                                {isLogin ? 'Sign up for free' : 'Log in'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Crisis Button (Fixed) */}

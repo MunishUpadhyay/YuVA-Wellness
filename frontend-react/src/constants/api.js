@@ -7,7 +7,10 @@ export const API_ENDPOINTS = {
         LOGOUT: '/api/auth/logout',
         OTP_GENERATE: '/api/auth/otp/generate',
         VERIFY_OTP: '/api/auth/verify-otp',
-        RESEND_OTP: '/api/auth/resend-otp'
+        RESEND_OTP: '/api/auth/resend-otp',
+        FORGOT_PASSWORD: '/api/auth/forgot-password',
+        VERIFY_RESET_OTP: '/api/auth/verify-reset-otp',
+        RESET_PASSWORD: '/api/auth/reset-password'
     },
     MOODS: {
         BASE: '/api/moods',
