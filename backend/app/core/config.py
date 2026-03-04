@@ -42,15 +42,19 @@ class Settings(BaseSettings):
         "http://localhost:5173", 
         "http://127.0.0.1:5173",
         "http://localhost:8080",
+        "https://yuva-wellness.vercel.app",
+        "https://yuva-wellness-gzhr.onrender.com"
     ]
+    # Regex to match any vercel/netlify app subdomains
+    allow_origin_regex: str = r"https://.*\.vercel\.app|https://.*\.render\.com|https://.*\.netlify\.app"
 
     @validator("allowed_origins", pre=True)
-    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str]:
         if isinstance(v, str) and not v.startswith("["):
-            return [i.strip() for i in v.split(",")]
-        elif isinstance(v, (list, str)):
+            return [i.strip() for i in v.split(",") if i.strip()]
+        elif isinstance(v, list):
             return v
-        raise ValueError(v)
+        return []
 
     # --------------------
     # Gemini / Google Cloud Configuration

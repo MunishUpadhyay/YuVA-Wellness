@@ -30,6 +30,7 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
+    allow_origin_regex=settings.allow_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -80,6 +81,10 @@ async def api_status():
         "database": db_status,
         "version": "1.0.0",
         "environment": settings.environment,
+        "cors": {
+            "allowed_origins": settings.allowed_origins,
+            "allow_origin_regex": settings.allow_origin_regex
+        },
         "features": {
             "mood_tracking": True,
             "journal": True,
