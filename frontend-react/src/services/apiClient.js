@@ -2,8 +2,10 @@ const BASE_URL = import.meta.env.VITE_API_URL || '';
 
 class ApiClient {
     static async request(endpoint, options = {}) {
-        // Use relative path if BASE_URL is empty (triggers Vite proxy)
-        const url = `${BASE_URL}${endpoint}`;
+        // Remove trailing slash from BASE_URL if present, and ensure endpoint starts with /
+        const cleanBaseUrl = BASE_URL.replace(/\/$/, '');
+        const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+        const url = `${cleanBaseUrl}${cleanEndpoint}`;
 
         const token = localStorage.getItem('access_token');
         const defaultOptions = {

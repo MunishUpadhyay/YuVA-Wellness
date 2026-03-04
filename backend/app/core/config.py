@@ -2,6 +2,7 @@
 Configuration settings for YuVA Wellness API
 """
 from functools import lru_cache
+from pydantic import validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -41,10 +42,15 @@ class Settings(BaseSettings):
         "http://localhost:5173", 
         "http://127.0.0.1:5173",
         "http://localhost:8080",
-        "https://*.vercel.app",
-        "https://*.netlify.app",
-        "https://*.pages.dev"
     ]
+
+    @validator("allowed_origins", pre=True)
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+        if isinstance(v, str) and not v.startswith("["):
+            return [i.strip() for i in v.split(",")]
+        elif isinstance(v, (list, str)):
+            return v
+        raise ValueError(v)
 
     # --------------------
     # Gemini / Google Cloud Configuration
