@@ -98,11 +98,15 @@ async def api_status():
     
     # Check SMTP configuration
     smtp_ok = bool(settings.smtp_user and settings.smtp_password and settings.smtp_password != "your-app-password")
+    from app.services.email_service import last_email_error
     
     return {
         "api": "online",
         "database": db_status,
-        "email_service": "online (authenticated)" if smtp_ok else "config_error",
+        "email_status": {
+            "configured": smtp_ok,
+            "last_error": last_email_error if not smtp_ok or last_email_error else "none"
+        },
         "tables": {
             "users": users_table,
             "otp_codes": otp_table
