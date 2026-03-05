@@ -12,6 +12,7 @@ from typing import Dict, Optional, Any, Tuple
 from collections import defaultdict, deque
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
+import logging
 
 from fastapi import HTTPException, Request, status
 from jose import jwt, JWTError
@@ -27,6 +28,8 @@ SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 TEMP_TOKEN_EXPIRE_MINUTES = 5
+
+logger = logging.getLogger(__name__)
 
 # Password hashing context with automatic truncation support for bcrypt
 pwd_context = CryptContext(
@@ -65,8 +68,7 @@ def hash_password(password: str) -> str:
             raise
             
     except Exception as e:
-        import logging
-        logging.error(f"Critical: All BCrypt hashing attempts failed: {str(e)}")
+        logger.error(f"Critical: All BCrypt hashing attempts failed: {str(e)}")
         
         # FINAL FAILSAFE: If the library is totally broken in production, 
         # use SHA256 with a unique prefix so we can identify these users later.
@@ -96,8 +98,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
             
         return pwd_context.verify(plain_password, hashed_password)
     except Exception as e:
-        import logging
-        logging.error(f"Password verification failed: {str(e)}")
+        logger.error(f"Password verification failed: {str(e)}")
         return False
 
 def is_password_strong(password: str) -> Tuple[bool, str]:

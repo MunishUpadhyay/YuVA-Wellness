@@ -14,6 +14,9 @@ from app.db.models.user import User
 from app.db.models.otp import OTP
 from ..core.security import hash_password, verify_password, is_password_strong, hash_otp
 
+import logging
+logger = logging.getLogger(__name__)
+
 class AuthService:
     """Authentication service with 2FA logic"""
     
