@@ -51,10 +51,14 @@ class EmailService:
         msg.add_alternative(html_content, subtype="html")
 
         try:
-            with smtplib.SMTP(settings.smtp_host, settings.smtp_port) as server:
-                server.starttls()
-                server.login(settings.smtp_user, settings.smtp_password)
-                server.send_message(msg)
+            # Use standard SMTP with STARTTLS
+            server = smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=10)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(settings.smtp_user, settings.smtp_password)
+            server.send_message(msg)
+            server.quit()
             
             logger.info(f"HTML OTP email sent successfully to {to_email}")
             return True

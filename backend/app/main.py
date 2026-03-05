@@ -96,15 +96,19 @@ async def api_status():
         users_table = "unknown"
         otp_table = "unknown"
     
+    # Check SMTP configuration
+    smtp_ok = bool(settings.smtp_user and settings.smtp_password and settings.smtp_password != "your-app-password")
+    
     return {
         "api": "online",
         "database": db_status,
+        "email_service": "online (authenticated)" if smtp_ok else "config_error",
         "tables": {
             "users": users_table,
             "otp_codes": otp_table
         },
         "version": "1.0.1",
-        "deployment_id": "hardened_v1",
+        "deployment_id": "yuva-v1.0.1-hardened",
         "environment": settings.environment,
         "cors": {
             "allowed_origins": settings.allowed_origins,

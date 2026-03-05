@@ -62,11 +62,7 @@ async def login(
     # The service returns the code.
     otp_code = await AuthService.generate_otp(db, user.id, user.email)
     
-    # MOCK SENDING (Print to console as per previous instructions)
-    # MOCK SENDING (Print to console)
-    msg = f"------------ 2FA OTP for {user.email}: {otp_code} ------------"
-    print(msg, flush=True)
-    logger.info(msg)
+    otp_code = await AuthService.generate_otp(db, user.id, user.email)
     
     # 3. Generate Temp Token (5 min expiry)
     temp_token = create_temp_token(
@@ -157,18 +153,6 @@ async def resend_otp(
          raise HTTPException(status_code=404, detail="User not found")
          
     otp_code = await AuthService.generate_otp(db, user_id, user.email)
-    
-    # MOCK SENDING
-    # Fetch user to get email?
-    from sqlalchemy import select
-    from app.db.models.user import User
-    result = await db.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-    email = user.email if user else "unknown"
-    
-    msg = f"------------ RESENT 2FA OTP for {email}: {otp_code} ------------"
-    print(msg, flush=True)
-    logger.info(msg)
     
     # 3. Return fresh temp token (reset timer)
     temp_token = create_temp_token(
