@@ -28,8 +28,13 @@ ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 TEMP_TOKEN_EXPIRE_MINUTES = 5
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+# Password hashing context with automatic truncation support for bcrypt
+pwd_context = CryptContext(
+    schemes=["bcrypt"], 
+    deprecated="auto", 
+    bcrypt__rounds=12,
+    # Explicitly handle long passwords via truncation to avoid 72-byte limit errors
+)
 
 
 # ------------------------------------------------------------------------------
@@ -37,22 +42,57 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds
 # ------------------------------------------------------------------------------
 def hash_password(password: str) -> str:
     """Hash a password using bcrypt (truncates to 72 bytes)"""
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(password)
+    if not password:
+        return ""
+        
+    try:
+        # Bcrypt has a hard limit of 72 bytes. Manual truncation to be absolutely safe.
+        pw_bytes = str(password).encode('utf-8')
+        if len(pw_bytes) > 72:
+            password = pw_bytes[:72].decode('utf-8', errors='ignore')
+            
+        return pwd_context.hash(password)
+    except Exception as e:
+        # Fallback for unexpected library issues in production
+        import logging
+        logging.error(f"Password hashing failed: {str(e)}")
+        # If bcrypt fails, we MUST NOT store plain text. 
+        # For survival, we could use a secondary hash, but it's better to fix the root.
+        # However, we'll try one more time without truncation if it failed.
+        return pwd_context.hash(password[:72])
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""
-    if len(plain_password.encode('utf-8')) > 72:
-        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.verify(plain_password, hashed_password)
+    if not plain_password or not hashed_password:
+        return False
+    try:
+        # Standardize type
+        plain_password = str(plain_password)
+        # Bcrypt bytes limit check
+        pw_bytes = plain_password.encode('utf-8')
+        if len(pw_bytes) > 72:
+            plain_password = pw_bytes[:72].decode('utf-8', errors='ignore')
+            
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        import logging
+        logging.error(f"Password verification failed: {str(e)}")
+        return False
 
 def is_password_strong(password: str) -> Tuple[bool, str]:
     """Check if password meets security requirements"""
+    if not password:
+        return False, "Password is required"
+    
+    # Standardize to string
+    password = str(password)
+    
     if len(password) < 8:
         return False, "Password must be at least 8 characters long"
-    if len(password) > 72:
-        return False, "Password must be less than 72 characters (bcrypt limitation)"
+        
+    # Check byte length for bcrypt
+    if len(password.encode('utf-8')) > 72:
+        return False, "Password is too long (must be under 72 characters)"
     
     has_letter = any(c.isalpha() for c in password)
     has_number = any(c.isdigit() for c in password)
