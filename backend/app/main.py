@@ -103,7 +103,8 @@ async def api_status():
             "users": users_table,
             "otp_codes": otp_table
         },
-        "version": "1.0.0",
+        "version": "1.0.1",
+        "deployment_id": "hardened_v1",
         "environment": settings.environment,
         "cors": {
             "allowed_origins": settings.allowed_origins,
