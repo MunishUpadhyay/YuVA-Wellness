@@ -12,6 +12,10 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 backend_root = os.path.dirname(script_dir)
 sys.path.insert(0, backend_root)
 
+# Load environment variables from backend/.env explicitly
+from dotenv import load_dotenv
+load_dotenv(os.path.join(backend_root, ".env"))
+
 from app.db.session import engine
 from app.db.base_class import Base
 from app.db.models.user import User
