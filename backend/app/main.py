@@ -118,5 +118,15 @@ async def api_status():
 @app.on_event("startup")
 async def on_startup():
     """Application startup"""
-    # No auto table creation - use migrations instead
-    pass
+    try:
+        from app.db.session import engine
+        from app.db.base_class import Base
+        # Important: Import models to ensure they are registered with Base.metadata
+        from app.db.models.user import User
+        from app.db.models.otp import OTP
+        
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables initialized successfully.")
+    except Exception as e:
+        logger.error(f"Failed to initialize database tables: {str(e)}")
