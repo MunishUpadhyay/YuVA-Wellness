@@ -7,8 +7,10 @@ import os
 import asyncio
 import logging
 
-# Add the current directory to sys.path so we can import from app
-sys.path.insert(0, os.getcwd())
+# Add the backend directory to sys.path so we can import from app
+script_dir = os.path.dirname(os.path.abspath(__file__))
+backend_root = os.path.dirname(script_dir)
+sys.path.insert(0, backend_root)
 
 from app.db.session import engine
 from app.db.base_class import Base
