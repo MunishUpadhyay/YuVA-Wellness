@@ -25,7 +25,8 @@ class ApiClient {
             // Handle 401 explicitly if needed, but usually we just let it fail
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
+                const detailedError = errorData.detail || errorData.error || errorData.message;
+                throw new Error(detailedError || `HTTP ${response.status}: ${response.statusText}`);
             }
 
             // Some endpoints might return empty body (e.g. logout)

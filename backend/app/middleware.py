@@ -43,7 +43,7 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
                 
             return JSONResponse(
                 status_code=500,
-                content={"error": error_msg, "status_code": 500}
+                content={"detail": error_msg, "status_code": 500}
             )
 
 
