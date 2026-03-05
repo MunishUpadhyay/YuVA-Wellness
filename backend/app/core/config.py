@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = "your-email@gmail.com"
     smtp_password: str = "your-app-password"
+    mail_from_name: str = "YuVA Wellness"
+    mail_from_address: str = "noreply@yuva-wellness.com"
 
     # --------------------
     # CORS Configuration

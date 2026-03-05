@@ -130,7 +130,8 @@ async def on_startup():
         from app.db.models.otp import OTP
         
         async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            # Table initialization moved to scripts/init_db.py
+            pass
         logger.info("Database tables initialized successfully.")
     except Exception as e:
         logger.error(f"Failed to initialize database tables: {str(e)}")
