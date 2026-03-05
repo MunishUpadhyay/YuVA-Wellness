@@ -7,8 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import chat, journal, analytics, ai_features, mood, resources, ai
 from app.api.auth import router as auth_router
+import logging
 from app.middleware import ErrorHandlingMiddleware, LoggingMiddleware
 from app.core.config import get_settings
+
+logger = logging.getLogger(__name__)
 
 # Initialize settings
 settings = get_settings()
