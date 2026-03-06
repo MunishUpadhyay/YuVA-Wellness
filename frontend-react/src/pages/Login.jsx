@@ -42,6 +42,8 @@ const Login = () => {
             }
         };
 
+        console.log('[Google Auth] Initializing with Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
         window.google.accounts.id.initialize({
             client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
             callback: handleCredentialResponse,
