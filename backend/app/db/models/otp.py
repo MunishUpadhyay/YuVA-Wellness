@@ -16,9 +16,10 @@ class OTP(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id"),
-        nullable=False,
+        nullable=True,
         index=True
     )
+    email: Mapped[str] = mapped_column(String, nullable=False, index=True)
     # Storing hashed value for security
     otp_hash: Mapped[str] = mapped_column(String, nullable=False)
     

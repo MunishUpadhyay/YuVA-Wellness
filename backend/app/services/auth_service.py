@@ -66,11 +66,11 @@ class AuthService:
         return None
 
     @staticmethod
-    async def generate_otp(db: AsyncSession, user_id: uuid.UUID, email: str) -> str:
+    async def generate_otp(db: AsyncSession, email: str, user_id: Optional[uuid.UUID] = None) -> str:
         """
-        Generate, hash, and store OTP for user.
-        Sends email via SMTP.
-        Returns the PLAIN code (to be sent via email/SMS).
+        Generate, hash, and store OTP for an email address.
+        Sends email via SMTP/API.
+        Returns the PLAIN code.
         """
         from .email_service import EmailService
         from fastapi import HTTPException
@@ -80,10 +80,7 @@ class AuthService:
         code_hash = hash_otp(code)
         expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
         
-        # Try sending email BEFORE committing to DB (or after? Requirements say "OTP is not stored if email sending fails")
-        # So we should send first? Or send then commit? 
-        # "Ensure OTP is not stored if email sending fails" -> Send first or rollback.
-        
+        # Send OTP first
         sent = EmailService.send_otp_email(email, code)
         if not sent:
              logger.error(f"Failed to send OTP email to {email}")
@@ -92,11 +89,12 @@ class AuthService:
                  detail="Could not send verification email. Please check your SMTP configuration."
              )
 
-        # Invalidate previous OTPs
-        await db.execute(delete(OTP).where(OTP.user_id == user_id))
+        # Invalidate previous OTPs for this email
+        await db.execute(delete(OTP).where(OTP.email == email))
         
         otp_entry = OTP(
             user_id=user_id,
+            email=email,
             otp_hash=code_hash,
             expires_at=expires_at,
             attempts=0,
@@ -109,15 +107,15 @@ class AuthService:
         return code
 
     @staticmethod
-    async def verify_otp(db: AsyncSession, user_id: uuid.UUID, code: str) -> bool:
+    async def verify_otp(db: AsyncSession, email: str, code: str) -> bool:
         """
-        Stage 2: Verify OTP code.
+        Stage 2: Verify OTP code for an email.
         Checks hash, expiry, and max attempts.
         """
-        # Find latest valid OTP
+        # Find latest valid OTP for this email
         result = await db.execute(
             select(OTP).where(
-                OTP.user_id == user_id,
+                OTP.email == email,
                 OTP.is_used == False,
                 OTP.expires_at > datetime.now(timezone.utc)
             ).order_by(desc(OTP.expires_at))

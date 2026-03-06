@@ -20,18 +20,16 @@ class OTPGenerateRequest(BaseModel):
         return v
 
 class RegisterRequest(BaseModel):
-    """User registration request"""
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
+    """User registration request with OTP"""
+    email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: Optional[str] = None
-    
-    @validator('email', always=True)
-    def check_identifier(cls, v, values):
-        if not v and not values.get('phone'):
-            raise ValueError('Either email or phone is required')
-        return v
+    otp: str = Field(..., description="OTP received via email")
+
+class RegisterOTPRequest(BaseModel):
+    """Request to send OTP for registration"""
+    email: EmailStr
 
 class LoginRequest(BaseModel):
     """Stage 1 Login: Identifier + Password"""

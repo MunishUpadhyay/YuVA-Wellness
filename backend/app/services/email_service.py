@@ -66,8 +66,15 @@ class EmailService:
                     "Authorization": f"Bearer {settings.resend_api_key}",
                     "Content-Type": "application/json"
                 }
+                
+                # Resend 403 check: If sender is Gmail/Yahoo, they won't allow it without verification.
+                # Default to onboarding@resend.dev for testing/unverified domains.
+                from_addr = settings.mail_from_address
+                if "gmail.com" in from_addr or "yuva-wellness.com" in from_addr:
+                    from_addr = "onboarding@resend.dev"
+                
                 data = {
-                    "from": f"{settings.mail_from_name} <onboarding@resend.dev>" if ".dev" in settings.resend_api_key else f"{settings.mail_from_name} <{settings.smtp_user}>",
+                    "from": f"{settings.mail_from_name} <{from_addr}>",
                     "to": [to_email],
                     "subject": f"{otp} is your YuVA verification code",
                     "html": html_content,

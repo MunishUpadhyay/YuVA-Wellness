@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.session import get_db
 from app.core.config import get_settings
 from app.schemas.auth import (
-    RegisterRequest, LoginRequest, AuthResponse, 
+    RegisterRequest, RegisterOTPRequest, LoginRequest, AuthResponse, 
     GuestResponse, LogoutResponse, UserResponse,
     OTPGenerateRequest, OTPVerifyRequest, ResendOTPRequest,
     ForgotPasswordRequest, VerifyResetOTPRequest, ResetPasswordRequest
@@ -60,9 +60,8 @@ async def login(
     # Note: In production, send this via email/SMS. 
     # For now, it's printed to console by generate_otp (wait, I removed print from service, I should add it back or return it)
     # The service returns the code.
-    otp_code = await AuthService.generate_otp(db, user.id, user.email)
+    otp_code = await AuthService.generate_otp(db, email=user.email, user_id=user.id)
     
-    otp_code = await AuthService.generate_otp(db, user.id, user.email)
     
     # 3. Generate Temp Token (5 min expiry)
     temp_token = create_temp_token(
@@ -93,15 +92,7 @@ async def verify_otp(
         
     user_id = uuid.UUID(user_id_str)
     
-    # 2. Verify OTP
-    is_valid = await AuthService.verify_otp(db, user_id, request.otp)
-    if not is_valid:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="Invalid or expired OTP"
-        )
-        
-    # 3. Fetch User
+    # 2. Fetch User and Email
     from sqlalchemy import select
     from app.db.models.user import User
     result = await db.execute(select(User).where(User.id == user_id))
@@ -109,6 +100,14 @@ async def verify_otp(
     
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # 3. Verify OTP
+    is_valid = await AuthService.verify_otp(db, user.email, request.otp)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Invalid or expired OTP"
+        )
 
     # 4. Issue Access Token
     access_token = create_access_token(
@@ -152,7 +151,7 @@ async def resend_otp(
          from fastapi import HTTPException
          raise HTTPException(status_code=404, detail="User not found")
          
-    otp_code = await AuthService.generate_otp(db, user_id, user.email)
+    otp_code = await AuthService.generate_otp(db, email=user.email, user_id=user_id)
     
     # 3. Return fresh temp token (reset timer)
     temp_token = create_temp_token(
@@ -181,7 +180,7 @@ async def forgot_password(
             temp_token="fake_token"
         )
         
-    otp_code = await AuthService.generate_otp(db, user.id, user.email)
+    otp_code = await AuthService.generate_otp(db, email=user.email, user_id=user.id)
     
     msg = f"------------ PASSWORD RESET OTP for {user.email}: {otp_code} ------------"
     print(msg, flush=True)
@@ -295,21 +294,51 @@ async def create_guest(
         message="Guest user created"
     )
 
+@router.post("/register/otp", response_model=AuthResponse)
+async def send_registration_otp(
+    request: RegisterOTPRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Stage 1 Registration: Send OTP to verify email.
+    Works for non-existent users.
+    """
+    # 1. Check if user already exists
+    user = await AuthService.get_user_by_identifier(db, request.email)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered. Please login."
+        )
+        
+    # 2. Generate and send OTP (Pre-Account)
+    await AuthService.generate_otp(db, email=request.email)
+    
+    return AuthResponse(
+        message="OTP sent to your email. Please verify to complete registration.",
+        requires_otp=True
+    )
+
 @router.post("/register", response_model=AuthResponse)
 async def register(
     user_data: RegisterRequest,
     response: Response,
     db: AsyncSession = Depends(get_db)
 ):
-    """Register new user"""
-    # Basic registration (Password Only for now, or we can trigger OTP flow?)
-    # User instructions: "Ensure password is hashed at registration."
-    # We will register them, then they can login to get OTP.
-    # Or we can automatically log them in?
-    # Let's keep it simple: Register -> Return Success -> Frontend redirects to Login.
-    
+    """
+    Stage 2 Registration: Verify OTP and create account.
+    """
+    # 1. Verify OTP first
+    is_valid = await AuthService.verify_otp(db, user_data.email, user_data.otp)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired OTP"
+        )
+        
+    # 2. Register user
     user, error_msg = await AuthService.register_user(
-        db, user_data.email, user_data.phone, user_data.password,
+        db, user_data.email, None, user_data.password,
         user_data.first_name, user_data.last_name
     )
     
@@ -321,7 +350,7 @@ async def register(
         
     return AuthResponse(
         user=UserResponse.model_validate(user),
-        message="Registration successful. Please login."
+        message="Registration successful. You can now login."
     )
 
 @router.post("/logout", response_model=LogoutResponse)
