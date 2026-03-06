@@ -27,12 +27,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # --------------------
-    # SMTP Configuration (Brevo SMTP Relay)
+    # Email Configuration (Brevo HTTP API)
     # --------------------
-    smtp_host: str = "smtp-relay.brevo.com"
-    smtp_port: int = 587
-    smtp_user: str = "your-email@domain.com"
-    smtp_password: str = "your-brevo-smtp-key"
+    brevo_api_key: str = "your-brevo-api-key"
     mail_from_name: str = "YuVA Wellness"
     mail_from_address: str = "noreply@yuva-wellness.com"
 
