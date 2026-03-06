@@ -42,10 +42,12 @@ const Login = () => {
             }
         };
 
-        console.log('[Google Auth] Initializing with Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+        // Hardcoding the ID just to be 100% sure Vite's .env isn't the bottleneck right now
+        const GOOGLE_CLIENT_ID = "9078763119-vh2on0ncvmdo88hrb5p65uijjcgqtgum.apps.googleusercontent.com";
+        console.log('[Google Auth] Initializing with Client ID:', GOOGLE_CLIENT_ID);
 
         window.google.accounts.id.initialize({
-            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+            client_id: GOOGLE_CLIENT_ID,
             callback: handleCredentialResponse,
         });
 
