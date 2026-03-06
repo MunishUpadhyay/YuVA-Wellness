@@ -3,6 +3,7 @@ Email Service for sending OTPs via Brevo HTTP API
 """
 import json
 import urllib.request
+import urllib.error
 import logging
 from app.core.config import get_settings
 
@@ -66,11 +67,11 @@ class EmailService:
 
         try:
             logger.info(f"Sending OTP email via Brevo API to {to_email}")
-            
+
             data = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(url, data=data, headers=headers, method="POST")
-            
-            with urllib.request.urlopen(req, timeout=12) as response:
+
+            with urllib.request.urlopen(req, timeout=20) as response:
                 if response.status in [200, 201, 202]:
                     last_email_error = None
                     logger.info("OTP email sent successfully")
@@ -80,9 +81,16 @@ class EmailService:
                     logger.error(error_msg)
                     last_email_error = error_msg
                     return False
-                    
+
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode()
+            error_msg = f"Brevo API HTTPError {e.code}: {error_body}"
+            logger.error(error_msg)
+            last_email_error = error_msg
+            return False
+
         except Exception as e:
             error_msg = f"Brevo API error: {str(e)}"
-            last_email_error = error_msg
             logger.error(error_msg)
+            last_email_error = error_msg
             return False
