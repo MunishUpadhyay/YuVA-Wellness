@@ -53,6 +53,7 @@ class EmailService:
         msg.set_content(f"Your OTP code is: {otp}") # Fallback plain text
         msg.add_alternative(html_content, subtype="html")
 
+        resend_error = "Not attempted"
         # Try Resend API first if Key is present (Bypasses SMTP port blocks)
         if settings.resend_api_key:
             try:
@@ -73,9 +74,6 @@ class EmailService:
                     "text": f"Your OTP code is: {otp}"
                 }
                 
-                # Note: Resend requires a verified domain to send FROM your own email. 
-                # If using a test key, it might require sending from 'onboarding@resend.dev'
-                
                 req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
                 with urllib.request.urlopen(req, timeout=10) as response:
                     if response.status in [200, 201, 202]:
@@ -86,7 +84,8 @@ class EmailService:
                         raise Exception(f"Resend returned status {response.status}")
                         
             except Exception as eapi:
-                logger.warning(f"Resend API failed: {str(eapi)}. Falling back to SMTP...")
+                resend_error = str(eapi)
+                logger.warning(f"Resend API failed: {resend_error}. Falling back to SMTP...")
 
         # Fallback 1: Port 587 (STARTTLS)
         try:
@@ -115,7 +114,7 @@ class EmailService:
                 # All fail - Capture final error
                 error_details = f"All send methods failed. SMTP 587: {str(e587)} | SMTP 465: {str(e465)}"
                 if settings.resend_api_key:
-                    error_details += f" | Resend API: {str(eapi)}"
+                    error_details += f" | Resend API: {resend_error}"
                 
                 last_email_error = error_details
                 logger.error(f"Critical Email Failure for {to_email}: {error_details}")
