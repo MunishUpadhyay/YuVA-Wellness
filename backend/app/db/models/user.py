@@ -49,6 +49,20 @@ class User(Base):
         comment="Hashed password for registered users"
     )
 
+    # Authentication context
+    provider: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        default="local",
+        comment="Authentication provider: local or google"
+    )
+    
+    profile_picture: Mapped[Optional[str]] = mapped_column(
+        String(500),
+        nullable=True,
+        comment="Profile picture URL from social provider"
+    )
+
     # Profile fields
     first_name: Mapped[Optional[str]] = mapped_column(
         String(100),

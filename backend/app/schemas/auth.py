@@ -20,44 +20,24 @@ class OTPGenerateRequest(BaseModel):
         return v
 
 class RegisterRequest(BaseModel):
-    """User registration request with OTP"""
+    """User registration request (Standard 1FA)"""
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: Optional[str] = None
-    otp: str = Field(..., description="OTP received via email")
 
-class RegisterOTPRequest(BaseModel):
-    """Request to send OTP for registration"""
-    email: EmailStr
+class GoogleLoginRequest(BaseModel):
+    """Google OAuth login request"""
+    credential: str = Field(..., description="Google ID Token")
 
 class LoginRequest(BaseModel):
-    """Stage 1 Login: Identifier + Password"""
+    """Standard Login: Identifier + Password"""
     identifier: str # email or phone
     password: str
-
-class OTPVerifyRequest(BaseModel):
-    """Stage 2 Login: Temp Token + OTP"""
-    temp_token: str
-    otp: str
-
-class ResendOTPRequest(BaseModel):
-    """Resend OTP using temp token"""
-    temp_token: str
 
 class ForgotPasswordRequest(BaseModel):
     """Stage 1 Forgot Password: Email submission"""
     email: EmailStr
-
-class VerifyResetOTPRequest(BaseModel):
-    """Stage 2 Forgot Password: OTP verification"""
-    reset_token: str
-    otp: str
-
-class ResetPasswordRequest(BaseModel):
-    """Stage 3 Forgot Password: Set new password"""
-    reset_token: str
-    new_password: str = Field(..., min_length=8, max_length=128)
 
 # Response schemas
 

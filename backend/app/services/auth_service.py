@@ -3,29 +3,34 @@ Authentication business logic for YuVA Wellness
 """
 import uuid
 from typing import Optional, Tuple
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 import secrets
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, desc, delete
+from sqlalchemy import select, or_
 from sqlalchemy.exc import IntegrityError
 
 from app.db.models.user import User
-from app.db.models.otp import OTP
-from ..core.security import hash_password, verify_password, is_password_strong, hash_otp
+from ..core.security import hash_password, verify_password, is_password_strong
+from ..core.config import get_settings
+
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 import logging
 logger = logging.getLogger(__name__)
+settings = get_settings()
 
 class AuthService:
-    """Authentication service with 2FA logic"""
+    """Authentication service supporting Local and Google providers"""
     
     @staticmethod
     async def create_guest_user(db: AsyncSession) -> User:
         """Create a new guest user"""
         guest_user = User(
             client_id=uuid.uuid4(),
-            is_guest=True
+            is_guest=True,
+            provider="local"
         )
         db.add(guest_user)
         await db.commit()
@@ -51,14 +56,15 @@ class AuthService:
     @staticmethod
     async def verify_password_login(db: AsyncSession, identifier: str, password: str) -> Optional[User]:
         """
-        Stage 1: Verify identifier and password.
-        Returns User if valid, None otherwise.
+        Verify identifier and password (Standard 1FA).
         """
         user = await AuthService.get_user_by_identifier(db, identifier)
         if not user or user.is_guest:
             return None
         
+        # Google users might not have a password
         if not user.password_hash:
+            logger.info(f"Login attempt failed: User {identifier} has no password (likely Google provider)")
             return None
             
         if verify_password(password, user.password_hash):
@@ -66,95 +72,82 @@ class AuthService:
         return None
 
     @staticmethod
-    async def generate_otp(db: AsyncSession, email: str, user_id: Optional[uuid.UUID] = None) -> str:
+    async def verify_google_token(token: str) -> Optional[dict]:
         """
-        Generate, hash, and store OTP for an email address.
-        Sends email via SMTP/API.
-        Returns the PLAIN code.
+        Verify Google ID token.
+        Returns user info dict if valid, None otherwise.
         """
-        from .email_service import EmailService
-        from fastapi import HTTPException
-        
-        # Generate 6-digit code
-        code = "".join([str(secrets.randbelow(10)) for _ in range(6)])
-        code_hash = hash_otp(code)
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=5)
-        
-        # Send OTP first
-        sent = EmailService.send_otp_email(email, code)
-        if not sent:
-             logger.error(f"Failed to send OTP email to {email}")
-             raise HTTPException(
-                 status_code=500,
-                 detail="Could not send verification email. Please check your SMTP configuration."
-             )
+        try:
+            # Specify the CLIENT_ID of the app that accesses the backend:
+            idinfo = id_token.verify_oauth2_token(
+                token, 
+                google_requests.Request(), 
+                settings.google_client_id
+            )
 
-        # Invalidate previous OTPs for this email
-        await db.execute(delete(OTP).where(OTP.email == email))
-        
-        otp_entry = OTP(
-            user_id=user_id,
-            email=email,
-            otp_hash=code_hash,
-            expires_at=expires_at,
-            attempts=0,
-            is_used=False
-        )
-        
-        db.add(otp_entry)
-        await db.commit()
-        
-        return code
+            # ID token is valid. Get the user's Google Account ID from the decoded token.
+            # userid = idinfo['sub']
+            return idinfo
+        except ValueError as e:
+            # Invalid token
+            logger.error(f"Google Token Verification Failed: {str(e)}")
+            return None
 
     @staticmethod
-    async def verify_otp(db: AsyncSession, email: str, code: str) -> bool:
+    async def authenticate_google_user(db: AsyncSession, idinfo: dict) -> User:
         """
-        Stage 2: Verify OTP code for an email.
-        Checks hash, expiry, and max attempts.
+        Handle user retrieval/creation for Google login.
         """
-        # Find latest valid OTP for this email
-        result = await db.execute(
-            select(OTP).where(
-                OTP.email == email,
-                OTP.is_used == False,
-                OTP.expires_at > datetime.now(timezone.utc)
-            ).order_by(desc(OTP.expires_at))
-        )
-        otp_entry = result.scalars().first()
+        email = idinfo.get('email')
+        first_name = idinfo.get('given_name', 'YuVA')
+        last_name = idinfo.get('family_name', 'User')
+        profile_picture = idinfo.get('picture')
+
+        # 1. Check if user exists
+        user = await AuthService.get_user_by_identifier(db, email)
         
-        if not otp_entry:
-            return False
-            
-        # Check attempts
-        if otp_entry.attempts >= 5:
-            # Invalidate
-            otp_entry.is_used = True
+        if user:
+            # Update info if provider matches or if migrating local to google
+            user.first_name = user.first_name or first_name
+            user.last_name = user.last_name or last_name
+            user.profile_picture = profile_picture
+            user.provider = "google" # Mark as google user
             await db.commit()
-            return False
-            
-        # Check hash
-        if otp_entry.otp_hash == hash_otp(code):
-            otp_entry.is_used = True
+            await db.refresh(user)
+            return user
+        
+        # 2. Create new user
+        new_user = User(
+            client_id=uuid.uuid4(),
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            profile_picture=profile_picture,
+            provider="google",
+            is_guest=False,
+            is_active=True
+        )
+        db.add(new_user)
+        try:
             await db.commit()
-            return True
-        else:
-            # Increment attempts
-            otp_entry.attempts += 1
-            await db.commit()
-            return False
+            await db.refresh(new_user)
+            return new_user
+        except IntegrityError:
+            await db.rollback()
+            # Race condition: user created between check and commit
+            result = await db.execute(select(User).where(User.email == email))
+            return result.scalar_one()
 
     @staticmethod
     async def register_user(
         db: AsyncSession, 
-        email: Optional[str],
-        phone: Optional[str],
+        email: str,
         password: str,
         first_name: str,
-        last_name: Optional[str] = None,
-        otp: Optional[str] = None
+        last_name: Optional[str] = None
     ) -> Tuple[Optional[User], str]:
         """
-        Register a new user.
+        Register a new user (Standard 1FA).
         """
         # Validate password
         is_valid, error_msg = is_password_strong(password)
@@ -162,12 +155,9 @@ class AuthService:
             return None, error_msg
             
         # Check existence
-        if email:
-            u = await AuthService.get_user_by_identifier(db, email)
-            if u: return None, "Email already registered"
-        if phone:
-            u = await AuthService.get_user_by_identifier(db, phone)
-            if u: return None, "Phone already registered"
+        u = await AuthService.get_user_by_identifier(db, email)
+        if u: 
+            return None, "Email already registered"
             
         password_hash = hash_password(password)
         
@@ -175,12 +165,12 @@ class AuthService:
             new_user = User(
                 client_id=uuid.uuid4(),
                 email=email,
-                phone=phone,
                 password_hash=password_hash,
                 first_name=first_name,
                 last_name=last_name,
                 is_guest=False,
-                is_active=True
+                is_active=True,
+                provider="local"
             )
             db.add(new_user)
             await db.commit()
@@ -193,7 +183,7 @@ class AuthService:
     @staticmethod
     async def update_password(db: AsyncSession, user_id: uuid.UUID, new_password: str) -> Tuple[bool, str]:
         """
-        Update a user's password (e.g., for password rest).
+        Update a user's password.
         """
         # Validate password strength
         is_valid, error_msg = is_password_strong(new_password)
@@ -209,5 +199,6 @@ class AuthService:
 
         # Update password
         user.password_hash = hash_password(new_password)
+        user.provider = "local" # Ensure they can login with password
         await db.commit()
         return True, "Password updated successfully"

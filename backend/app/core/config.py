@@ -27,9 +27,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # --------------------
-    # Email Configuration (Brevo HTTP API)
+    # Authentication Configuration
     # --------------------
-    brevo_api_key: str = "your-brevo-api-key"
+    google_client_id: str = "your-google-client-id.apps.googleusercontent.com"
     mail_from_name: str = "YuVA Wellness"
     mail_from_address: str = "noreply@yuva-wellness.com"
 

@@ -97,16 +97,14 @@ async def api_status():
         otp_table = "unknown"
     
     # Check configuration
-    api_ok = bool(settings.brevo_api_key and settings.brevo_api_key != "your-brevo-api-key")
-    from app.services.email_service import last_email_error
+    api_ok = bool(settings.google_client_id and settings.google_client_id != "your-google-client-id.apps.googleusercontent.com")
     
     return {
         "api": "online",
         "database": db_status,
-        "email_status": {
-            "api_configured": api_ok,
-            "provider": "Brevo HTTP API",
-            "last_error": last_email_error or "none"
+        "auth_methods": {
+            "google_oauth": api_ok,
+            "standard_password": True
         },
         "tables": {
             "users": users_table,
