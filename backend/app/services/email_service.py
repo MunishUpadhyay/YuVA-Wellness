@@ -1,5 +1,5 @@
 """
-Email Service for sending OTPs via SMTP
+Email Service for sending OTPs via Brevo SMTP
 """
 import smtplib
 from email.message import EmailMessage
@@ -16,13 +16,13 @@ class EmailService:
     @staticmethod
     def send_otp_email(to_email: str, otp: str) -> bool:
         """
-        Send professional HTML OTP email using SMTP with resilience (Fallback 587 -> 465).
+        Send professional HTML OTP email using Brevo SMTP.
         Returns True if successful, False otherwise.
         """
         global last_email_error
         
         if not settings.smtp_user or not settings.smtp_password:
-            last_email_error = "Credentials missing in config"
+            last_email_error = "SMTP credentials missing in configuration"
             logger.warning(last_email_error)
             return False
 
@@ -48,81 +48,21 @@ class EmailService:
 
         msg = EmailMessage()
         msg["Subject"] = f"{otp} is your YuVA verification code"
-        msg["From"] = f"{settings.mail_from_name} <{settings.smtp_user}>"
+        msg["From"] = settings.smtp_user
         msg["To"] = to_email
         msg.set_content(f"Your OTP code is: {otp}") # Fallback plain text
         msg.add_alternative(html_content, subtype="html")
 
-        resend_error = "Not attempted"
-        # Try Resend API first if Key is present (Bypasses SMTP port blocks)
-        if settings.resend_api_key:
-            try:
-                import json
-                import urllib.request
-                
-                logger.info(f"Using Resend Web API for {to_email}")
-                url = "https://api.resend.com/emails"
-                headers = {
-                    "Authorization": f"Bearer {settings.resend_api_key}",
-                    "Content-Type": "application/json"
-                }
-                
-                # Resend 403 check: If sender is Gmail/Yahoo, they won't allow it without verification.
-                # Default to onboarding@resend.dev for testing/unverified domains.
-                from_addr = settings.mail_from_address
-                if "gmail.com" in from_addr or "yuva-wellness.com" in from_addr:
-                    from_addr = "onboarding@resend.dev"
-                
-                data = {
-                    "from": f"{settings.mail_from_name} <{from_addr}>",
-                    "to": [to_email],
-                    "subject": f"{otp} is your YuVA verification code",
-                    "html": html_content,
-                    "text": f"Your OTP code is: {otp}"
-                }
-                
-                req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    if response.status in [200, 201, 202]:
-                        last_email_error = None
-                        logger.info(f"OTP sent successfully via Resend API to {to_email}")
-                        return True
-                    else:
-                        raise Exception(f"Resend returned status {response.status}")
-                        
-            except Exception as eapi:
-                resend_error = str(eapi)
-                logger.warning(f"Resend API failed: {resend_error}. Falling back to SMTP...")
-
-        # Fallback 1: Port 587 (STARTTLS)
         try:
-            logger.info(f"Attempting SMTP Port 587 (STARTTLS) for {to_email}")
-            with smtplib.SMTP(settings.smtp_host, 587, timeout=12) as server:
-                server.ehlo()
+            logger.info(f"Attempting to send OTP email via Brevo SMTP to {to_email}")
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as server:
                 server.starttls()
-                server.ehlo()
                 server.login(settings.smtp_user, settings.smtp_password)
                 server.send_message(msg)
                 last_email_error = None
-                logger.info(f"OTP sent successfully via 587 to {to_email}")
+                logger.info(f"OTP sent successfully via Brevo SMTP to {to_email}")
                 return True
-        except Exception as e587:
-            logger.warning(f"Port 587 failed: {str(e587)}. Trying fallback Port 465 (SSL)...")
-            
-            # Fallback 2: Port 465 (SSL/TLS)
-            try:
-                with smtplib.SMTP_SSL(settings.smtp_host, 465, timeout=12) as server:
-                    server.login(settings.smtp_user, settings.smtp_password)
-                    server.send_message(msg)
-                    last_email_error = None
-                    logger.info(f"OTP sent successfully via 465 fallback to {to_email}")
-                    return True
-            except Exception as e465:
-                # All fail - Capture final error
-                error_details = f"All send methods failed. SMTP 587: {str(e587)} | SMTP 465: {str(e465)}"
-                if settings.resend_api_key:
-                    error_details += f" | Resend API: {resend_error}"
-                
-                last_email_error = error_details
-                logger.error(f"Critical Email Failure for {to_email}: {error_details}")
-                return False
+        except Exception as e:
+            last_email_error = f"Brevo SMTP Failure: {str(e)}"
+            logger.error(f"Critical Email Failure for {to_email}: {last_email_error}")
+            return False

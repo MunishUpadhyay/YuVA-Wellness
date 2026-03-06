@@ -97,8 +97,7 @@ async def api_status():
         otp_table = "unknown"
     
     # Check configuration
-    smtp_ok = bool(settings.smtp_user and settings.smtp_password and settings.smtp_password != "your-app-password")
-    resend_ok = bool(settings.resend_api_key)
+    smtp_ok = bool(settings.smtp_user and settings.smtp_password and settings.smtp_password != "your-brevo-smtp-key")
     from app.services.email_service import last_email_error
     
     return {
@@ -106,8 +105,8 @@ async def api_status():
         "database": db_status,
         "email_status": {
             "smtp_configured": smtp_ok,
-            "resend_api_configured": resend_ok,
-            "last_error": last_email_error if (not smtp_ok and not resend_ok) or last_email_error else "none"
+            "provider": "Brevo SMTP",
+            "last_error": last_email_error if (not smtp_ok) or last_email_error else "none"
         },
         "tables": {
             "users": users_table,
