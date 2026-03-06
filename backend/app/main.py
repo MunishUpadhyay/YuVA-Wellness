@@ -96,16 +96,18 @@ async def api_status():
         users_table = "unknown"
         otp_table = "unknown"
     
-    # Check SMTP configuration
+    # Check configuration
     smtp_ok = bool(settings.smtp_user and settings.smtp_password and settings.smtp_password != "your-app-password")
+    resend_ok = bool(settings.resend_api_key)
     from app.services.email_service import last_email_error
     
     return {
         "api": "online",
         "database": db_status,
         "email_status": {
-            "configured": smtp_ok,
-            "last_error": last_email_error if not smtp_ok or last_email_error else "none"
+            "smtp_configured": smtp_ok,
+            "resend_api_configured": resend_ok,
+            "last_error": last_email_error if (not smtp_ok and not resend_ok) or last_email_error else "none"
         },
         "tables": {
             "users": users_table,

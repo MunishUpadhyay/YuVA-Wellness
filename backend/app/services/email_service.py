@@ -53,7 +53,42 @@ class EmailService:
         msg.set_content(f"Your OTP code is: {otp}") # Fallback plain text
         msg.add_alternative(html_content, subtype="html")
 
-        # Attempt 1: Port 587 (STARTTLS) - Standard for Gmail/SendGrid
+        # Try Resend API first if Key is present (Bypasses SMTP port blocks)
+        if settings.resend_api_key:
+            try:
+                import json
+                import urllib.request
+                
+                logger.info(f"Using Resend Web API for {to_email}")
+                url = "https://api.resend.com/emails"
+                headers = {
+                    "Authorization": f"Bearer {settings.resend_api_key}",
+                    "Content-Type": "application/json"
+                }
+                data = {
+                    "from": f"{settings.mail_from_name} <onboarding@resend.dev>" if ".dev" in settings.resend_api_key else f"{settings.mail_from_name} <{settings.smtp_user}>",
+                    "to": [to_email],
+                    "subject": f"{otp} is your YuVA verification code",
+                    "html": html_content,
+                    "text": f"Your OTP code is: {otp}"
+                }
+                
+                # Note: Resend requires a verified domain to send FROM your own email. 
+                # If using a test key, it might require sending from 'onboarding@resend.dev'
+                
+                req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    if response.status in [200, 201, 202]:
+                        last_email_error = None
+                        logger.info(f"OTP sent successfully via Resend API to {to_email}")
+                        return True
+                    else:
+                        raise Exception(f"Resend returned status {response.status}")
+                        
+            except Exception as eapi:
+                logger.warning(f"Resend API failed: {str(eapi)}. Falling back to SMTP...")
+
+        # Fallback 1: Port 587 (STARTTLS)
         try:
             logger.info(f"Attempting SMTP Port 587 (STARTTLS) for {to_email}")
             with smtplib.SMTP(settings.smtp_host, 587, timeout=12) as server:
@@ -68,7 +103,7 @@ class EmailService:
         except Exception as e587:
             logger.warning(f"Port 587 failed: {str(e587)}. Trying fallback Port 465 (SSL)...")
             
-            # Attempt 2: Port 465 (SSL/TLS) - Alternative for strict environments
+            # Fallback 2: Port 465 (SSL/TLS)
             try:
                 with smtplib.SMTP_SSL(settings.smtp_host, 465, timeout=12) as server:
                     server.login(settings.smtp_user, settings.smtp_password)
@@ -77,8 +112,11 @@ class EmailService:
                     logger.info(f"OTP sent successfully via 465 fallback to {to_email}")
                     return True
             except Exception as e465:
-                # Both failed - Capture the more meaningful error
-                error_details = f"SMTP Failure. 587: {str(e587)} | 465: {str(e465)}"
+                # All fail - Capture final error
+                error_details = f"All send methods failed. SMTP 587: {str(e587)} | SMTP 465: {str(e465)}"
+                if settings.resend_api_key:
+                    error_details += f" | Resend API: {str(eapi)}"
+                
                 last_email_error = error_details
                 logger.error(f"Critical Email Failure for {to_email}: {error_details}")
                 return False
