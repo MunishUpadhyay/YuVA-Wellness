@@ -48,7 +48,7 @@ class EmailService:
 
         msg = EmailMessage()
         msg["Subject"] = f"{otp} is your YuVA verification code"
-        msg["From"] = settings.smtp_user
+        msg["From"] = settings.mail_from_address or settings.smtp_user
         msg["To"] = to_email
         msg.set_content(f"Your OTP code is: {otp}") # Fallback plain text
         msg.add_alternative(html_content, subtype="html")
