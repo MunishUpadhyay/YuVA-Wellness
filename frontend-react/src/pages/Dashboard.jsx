@@ -44,11 +44,11 @@ const Dashboard = () => {
             if (result.success && result.data && result.data.summary) {
                 const s = result.data.summary;
                 setMetrics({
-                    avgMood: s.avg_mood || '--',
-                    streak: s.streak || 0,
-                    journalCount: s.total_journal_entries || 0,
-                    wellnessScore: s.wellness_score || '--',
-                    wellnessCategory: s.wellness_category || 'Calculating...'
+                    avgMood: s.avg_mood ?? '--',
+                    streak: s.streak ?? 0,
+                    journalCount: s.total_journal_entries ?? 0,
+                    wellnessScore: s.wellness_score ?? 0,
+                    wellnessCategory: s.wellness_category || 'Log your first mood'
                 });
             } else {
                 calculateLocalMetrics();
@@ -80,7 +80,7 @@ const Dashboard = () => {
                 avgMood,
                 streak,
                 journalCount: journals.length,
-                wellnessScore: wScore,
+                wellnessScore: wScore === '--' ? 0 : wScore,
                 wellnessCategory: wCat
             });
         } catch (error) {

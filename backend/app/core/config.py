@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     # --------------------
     gcp_project: str | None = None
     gcp_location: str = "us-central1"
-    vertex_model: str = "gemini-2.0-flash"
+    vertex_model: str = "gemini-1.5-flash"
     gemini_api_key: str | None = None
 
     # --------------------

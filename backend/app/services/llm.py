@@ -375,6 +375,13 @@ class EnhancedGenerativeAIClient:
             if len(key) < 30:
                 return f"Error: API Key found but seems too short ({len(key)} chars). Please verify it."
                 
+            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+                return (
+                    "YuVA is currently resting (Limit reached). 🧘‍♂️ "
+                    "This usually happens when the free-tier API quota is hit. "
+                    "Please wait a minute or two and try again. Don't worry, I'll be back soon!"
+                )
+                
             return f"An error occurred connecting to the AI: {error_msg}. Please check if your API key is restricted or if the Generative Language API is enabled in your Google Cloud Console."
 
     async def chat_stream(self, user_messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:

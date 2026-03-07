@@ -111,8 +111,10 @@ async def get_dashboard_data(
     
     avg_mood = round(total_score / count, 1) if count > 0 else 0
     wellness_score = round((avg_mood / 5) * 100) if count > 0 else 0
-    wellness_category = "Calculating..."
-    if wellness_score >= 80: wellness_category = "Excellent"
+    wellness_category = "Not Enough Data"
+    if count == 0:
+        wellness_category = "Log your first mood"
+    elif wellness_score >= 80: wellness_category = "Excellent"
     elif wellness_score >= 60: wellness_category = "Good"
     elif wellness_score >= 40: wellness_category = "Fair"
     else: wellness_category = "Needs Attention"
