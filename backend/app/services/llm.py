@@ -354,11 +354,27 @@ class EnhancedGenerativeAIClient:
                     contents.append({"role": "user", "parts": [{"text": m.get("content", "")}]})
             
             # Using new generate_content API with system instructions
-            from google.genai import types
-            config = types.GenerateContentConfig(
-                system_instruction=system_instruction.strip()
-            ) if system_instruction else None
+        # Format messages for google-genai
+        # Ensure "system" messages aren't rejected if unsupported by the specific API method
+        # Usually we can bundle system prompt into the first user message or use config
+        contents = []
+        system_instruction = ""
+        for m in messages:
+            role = m.get("role", "user")
+            if role == "system":
+                system_instruction += m.get("content", "") + "\n"
+            elif role == "assistant":
+                contents.append({"role": "model", "parts": [{"text": m.get("content", "")}]})
+            else:
+                contents.append({"role": "user", "parts": [{"text": m.get("content", "")}]})
+        
+        # Using new generate_content API with system instructions
+        from google.genai import types
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction.strip()
+        ) if system_instruction else None
 
+        try:
             response = await self._client.aio.models.generate_content(
                 model=self._model_name,
                 contents=contents,
@@ -368,13 +384,16 @@ class EnhancedGenerativeAIClient:
         except Exception as e:
             import traceback; traceback.print_exc()
             error_msg = str(e)
-            print(f"ERROR IN _client.aio.models.generate_content: {error_msg}")
+            print(f"DEBUG: Gemini API Error with Model {self._model_name}: {error_msg}")
             
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                return "Google Gemini API Error: Rate limit or Quota exceeded (429). You have exhausted the free tier requests. Please check your Google API billing details or wait a minute before trying again."
+            # Diagnostic: check if key looks valid
+            key = self.settings.gemini_api_key or ""
+            if not key:
+                return "Error: GEMINI_API_KEY is missing in the environment."
+            if len(key) < 30:
+                return f"Error: API Key found but seems too short ({len(key)} chars). Please verify it."
                 
-            # Fallback to mock on any explicit API error so the user is not completely blocked
-            return f"An error occurred connecting to the AI: {error_msg}"
+            return f"An error occurred connecting to the AI: {error_msg}. Please check if your API key is restricted or if the Generative Language API is enabled in your Google Cloud Console."
 
     async def chat_stream(self, user_messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
         messages = [{"role": "system", "content": EMPATHETIC_SYSTEM_PROMPT}] + user_messages
@@ -386,27 +405,26 @@ class EnhancedGenerativeAIClient:
 
         self._ensure_client()
         if self._client is None:
-            async for chunk in _mock_model_stream(messages):
-                yield chunk
+            yield "AI Error: Client could not be initialized. Please check your GEMINI_API_KEY."
             return
 
+        contents = []
+        system_instruction = ""
+        for m in messages:
+            role = m.get("role", "user")
+            if role == "system":
+                system_instruction += m.get("content", "") + "\n"
+            elif role == "assistant":
+                contents.append({"role": "model", "parts": [{"text": m.get("content", "")}]})
+            else:
+                contents.append({"role": "user", "parts": [{"text": m.get("content", "")}]})
+
+        from google.genai import types
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction.strip()
+        ) if system_instruction else None
+
         try:
-            contents = []
-            system_instruction = ""
-            for m in messages:
-                role = m.get("role", "user")
-                if role == "system":
-                    system_instruction += m.get("content", "") + "\n"
-                elif role == "assistant":
-                    contents.append({"role": "model", "parts": [{"text": m.get("content", "")}]})
-                else:
-                    contents.append({"role": "user", "parts": [{"text": m.get("content", "")}]})
-
-            from google.genai import types
-            config = types.GenerateContentConfig(
-                system_instruction=system_instruction.strip()
-            ) if system_instruction else None
-
             response_stream = await self._client.aio.models.generate_content_stream(
                 model=self._model_name,
                 contents=contents,
@@ -421,12 +439,7 @@ class EnhancedGenerativeAIClient:
         except Exception as e:
             import traceback; traceback.print_exc()
             error_msg = str(e)
-            print(f"ERROR IN _client.aio.models.generate_content_stream: {error_msg}")
-            
-            if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-                yield "Google Gemini API Error: Rate limit or Quota exceeded (429). You have exhausted the free tier requests. Please check your Google API billing details or wait a minute before trying again."
-            else:
-                yield f"An error occurred connecting to the AI: {error_msg}"
+            yield f"Chat Stream Error: {error_msg}. (Verify your GEMINI_API_KEY in Render/Local .env)"
 
 
 class GenerativeAIClient(EnhancedGenerativeAIClient):
