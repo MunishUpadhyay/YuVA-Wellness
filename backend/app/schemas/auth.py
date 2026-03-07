@@ -64,6 +64,7 @@ class UserResponse(BaseModel):
     is_guest: bool
     is_active: bool
     has_recovery_code: bool = False
+    recovery_code_shown: bool = False
     created_at: datetime
     updated_at: datetime       
 
@@ -76,12 +77,12 @@ class AuthResponse(BaseModel):
     user: Optional[UserResponse] = None
     message: str
     
-    # 2FA fields
+    # 2FA / Security fields
     requires_otp: bool = False
     temp_token: Optional[str] = None
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
-    recovery_code: Optional[str] = None # Only provided during registration
+    recovery_code: Optional[str] = None # Provided during first login or signup
 
 
 class GuestResponse(BaseModel):

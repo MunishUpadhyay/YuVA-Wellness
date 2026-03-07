@@ -57,22 +57,33 @@ class AuthService:
         return result.scalar_one_or_none()
 
     @staticmethod
-    async def verify_password_login(db: AsyncSession, identifier: str, password: str) -> Optional[User]:
+    async def verify_password_login(db: AsyncSession, identifier: str, password: str) -> Tuple[Optional[User], Optional[str]]:
         """
         Verify identifier and password (Standard 1FA).
+        Returns (user, recovery_code) if verified.
         """
         user = await AuthService.get_user_by_identifier(db, identifier)
         if not user or user.is_guest:
-            return None
+            return None, None
         
         # Google users might not have a password
         if not user.password_hash:
             logger.info(f"Login attempt failed: User {identifier} has no password (likely Google provider)")
-            return None
+            return None, None
             
         if verify_password(password, user.password_hash):
-            return user
-        return None
+            recovery_code = None
+            # [NEW] Generate recovery code once only if not present
+            if not user.recovery_code_hash:
+                recovery_code = generate_recovery_code()
+                user.recovery_code_hash = hash_recovery_code(recovery_code)
+                user.recovery_code_shown = False
+                await db.commit()
+                await db.refresh(user)
+                logger.info(f"Generated first-time recovery code for user {identifier}")
+            
+            return user, recovery_code
+        return None, None
 
     @staticmethod
     async def verify_google_token(token: str) -> Optional[dict]:
@@ -163,15 +174,12 @@ class AuthService:
             return None, "Email already registered", ""
             
         password_hash = hash_password(password)
-        recovery_code = generate_recovery_code()
-        recovery_code_hash = hash_recovery_code(recovery_code)
-        
         try:
             new_user = User(
                 client_id=uuid.uuid4(),
                 email=email,
                 password_hash=password_hash,
-                recovery_code_hash=recovery_code_hash,
+                # recovery_code_hash removed - will be generated at login
                 first_name=first_name,
                 last_name=last_name,
                 is_guest=False,
@@ -181,7 +189,7 @@ class AuthService:
             db.add(new_user)
             await db.commit()
             await db.refresh(new_user)
-            return new_user, "", recovery_code
+            return new_user, "", "" # Returning empty recovery code
         except IntegrityError:
             await db.rollback()
             return None, "User already registered", ""

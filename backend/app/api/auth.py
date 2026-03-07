@@ -37,7 +37,7 @@ async def login(
     Standard Login: Authenticate with password and issue token immediately.
     """
     # 1. Verify credentials
-    user = await AuthService.verify_password_login(
+    user, recovery_code = await AuthService.verify_password_login(
         db, credentials.identifier, credentials.password
     )
     
@@ -66,7 +66,8 @@ async def login(
         user=UserResponse.model_validate(user),
         message="Login successful",
         access_token=access_token,
-        requires_otp=False
+        requires_otp=False,
+        recovery_code=recovery_code # Pass to frontend if generated
     )
 
 @router.post("/google", response_model=AuthResponse)

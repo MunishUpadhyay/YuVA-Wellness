@@ -36,12 +36,33 @@ const Dashboard = () => {
         setTimeout(() => setToast(null), 5000);
     };
 
-    const calculateMetrics = () => {
+    const calculateMetrics = async () => {
+        try {
+            // [NEW] Fetch metrics from Backend for real-time sync
+            const result = await ApiClient.get(API_ENDPOINTS.ANALYTICS.DASHBOARD);
+
+            if (result.success && result.data && result.data.summary) {
+                const s = result.data.summary;
+                setMetrics({
+                    avgMood: s.avg_mood || '--',
+                    streak: s.streak || 0,
+                    journalCount: s.total_journal_entries || 0,
+                    wellnessScore: s.wellness_score || '--',
+                    wellnessCategory: s.wellness_category || 'Calculating...'
+                });
+            } else {
+                calculateLocalMetrics();
+            }
+        } catch (error) {
+            console.error('Error fetching dashboard metrics', error);
+            calculateLocalMetrics();
+        }
+    };
+
+    const calculateLocalMetrics = () => {
         try {
             const moods = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOOD_ENTRIES) || '[]');
             const journals = JSON.parse(localStorage.getItem(STORAGE_KEYS.JOURNAL_ENTRIES) || '[]');
-
-            // Re-using simplified logic for demo continuity
             const streak = calculateStreak(moods);
 
             let avgMood = '--';
@@ -51,8 +72,6 @@ const Dashboard = () => {
             if (moods.length > 0) {
                 const totalScore = moods.reduce((sum, m) => sum + (m.score || 0), 0);
                 avgMood = (totalScore / moods.length).toFixed(1);
-
-                // Wellness Score
                 wScore = Math.round((Number(avgMood) / 5) * 100);
                 wCat = wScore >= 80 ? 'Excellent' : wScore >= 60 ? 'Good' : wScore >= 40 ? 'Fair' : 'Needs Attention';
             }
@@ -64,9 +83,8 @@ const Dashboard = () => {
                 wellnessScore: wScore,
                 wellnessCategory: wCat
             });
-
         } catch (error) {
-            console.error('Error calculating metrics', error);
+            console.error('Error calculating local metrics', error);
         }
     };
 

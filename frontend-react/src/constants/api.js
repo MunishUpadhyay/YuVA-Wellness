@@ -30,5 +30,9 @@ export const API_ENDPOINTS = {
     },
     AI: {
         CHAT: '/api/ai/chat'
+    },
+    ANALYTICS: {
+        SUMMARY: '/api/analytics',
+        DASHBOARD: '/api/analytics/dashboard'
     }
 };

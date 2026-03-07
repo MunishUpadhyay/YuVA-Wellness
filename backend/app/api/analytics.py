@@ -98,9 +98,27 @@ async def get_dashboard_data(
     
     # Mood distribution
     mood_counts = {}
+    total_score = 0
+    count = 0
+    mood_scores = {
+        'very_sad': 1, 'sad': 2, 'neutral': 3, 'happy': 4, 'very_happy': 5
+    }
+
     for mood in mood_entries:
         mood_counts[mood.mood] = mood_counts.get(mood.mood, 0) + 1
+        # Use score from DB if available, else fallback to mapping
+        score = float(mood.score) if mood.score else mood_scores.get(mood.mood, 3)
+        total_score += score
+        count += 1
     
+    avg_mood = round(total_score / count, 1) if count > 0 else 0
+    wellness_score = round((avg_mood / 5) * 100) if count > 0 else 0
+    wellness_category = "Calculating..."
+    if wellness_score >= 80: wellness_category = "Excellent"
+    elif wellness_score >= 60: wellness_category = "Good"
+    elif wellness_score >= 40: wellness_category = "Fair"
+    else: wellness_category = "Needs Attention"
+
     # Recent activity (last 7 days)
     week_ago = date.today() - timedelta(days=7)
     recent_journals = len([e for e in journal_entries if e.entry_date >= week_ago])
@@ -111,7 +129,11 @@ async def get_dashboard_data(
             "total_journal_entries": len(journal_entries),
             "total_mood_logs": len(mood_entries),
             "recent_journals": recent_journals,
-            "recent_moods": recent_moods
+            "recent_moods": recent_moods,
+            "avg_mood": avg_mood,
+            "wellness_score": wellness_score,
+            "wellness_category": wellness_category,
+            "streak": calculate_streak(mood_entries)
         },
         "mood_distribution": mood_counts,
         "activity_streak": calculate_streak(mood_entries),

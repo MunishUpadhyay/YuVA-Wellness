@@ -69,6 +69,13 @@ class User(Base):
         comment="Hashed 8-digit recovery code for password reset"
     )
 
+    recovery_code_shown: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        comment="Whether the user has seen their recovery code"
+    )
+
     # Profile fields
     first_name: Mapped[Optional[str]] = mapped_column(
         String(100),

@@ -96,8 +96,14 @@ const Login = () => {
                 // Register
                 const result = await register(email, password, firstName, lastName);
                 if (result.success) {
-                    setGeneratedCode(result.recovery_code);
-                    setShowRecoveryModal(true);
+                    setMessage({
+                        text: 'Registration successful! Please log in to secure your account and get your recovery code.',
+                        type: 'success'
+                    });
+                    setTimeout(() => {
+                        setIsLogin(true);
+                        clearState();
+                    }, 3000);
                 } else {
                     setMessage({ text: result.error || 'Registration failed.', type: 'error' });
                 }
@@ -105,8 +111,15 @@ const Login = () => {
                 // Login
                 const result = await login(email, password);
                 if (result.success) {
-                    setMessage({ text: 'Login successful!', type: 'success' });
-                    navigate('/');
+                    // [NEW] Check if a recovery code was generated during this login
+                    if (result.recovery_code) {
+                        setGeneratedCode(result.recovery_code);
+                        setShowRecoveryModal(true);
+                        // We stay on this page to show the modal
+                    } else {
+                        setMessage({ text: 'Login successful!', type: 'success' });
+                        navigate('/');
+                    }
                 } else {
                     setMessage({ text: result.error || 'Login failed.', type: 'error' });
                 }
