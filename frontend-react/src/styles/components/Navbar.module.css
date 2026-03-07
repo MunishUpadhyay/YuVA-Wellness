@@ -15,7 +15,7 @@
 }
 
 .desktopNav {
-    @apply hidden md:flex items-center gap-6;
+    @apply hidden lg:flex items-center gap-6;
 }
 
 .navLink {
@@ -38,9 +38,9 @@
 }
 
 .mobileNav {
-    @apply md:hidden;
+    @apply lg:hidden;
 }
 
 .mobileMenu {
-    @apply md:hidden absolute top-16 left-0 w-full bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 p-4 flex flex-col gap-4 shadow-2xl;
+    @apply lg:hidden absolute top-16 left-0 w-full bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 p-4 flex flex-col gap-4 shadow-2xl;
 }

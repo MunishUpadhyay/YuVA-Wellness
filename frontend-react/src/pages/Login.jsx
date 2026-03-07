@@ -55,9 +55,15 @@ const Login = () => {
 
         window.google.accounts.id.renderButton(
             googleButtonRef.current,
-            { theme: "outline", size: "large", width: "100%", text: "continue_with" }
+            {
+                theme: "outline",
+                size: "large",
+                width: "100%",
+                text: isLogin ? "signin_with" : "signup_with",
+                shape: "pill"
+            }
         );
-    }, [googleLogin, navigate]);
+    }, [googleLogin, navigate, isLogin]);
 
     const clearState = () => {
         setMessage({ text: '', type: '' });
@@ -189,12 +195,17 @@ const Login = () => {
 
                     {!isResetMode && (
                         <div className={cn("grid grid-cols-1 gap-4", showRecoveryModal && "opacity-20 pointer-events-none")}>
-                            <div ref={googleButtonRef} className="w-full overflow-hidden rounded-lg"></div>
+                            {/* Premium Google Button Container */}
+                            <div className="relative group p-[1px] rounded-full bg-gradient-to-r from-primary/50 via-slate-700/50 to-secondary/50 hover:from-primary hover:to-secondary transition-all duration-500 shadow-lg shadow-primary/5">
+                                <div className="bg-slate-950 rounded-full overflow-hidden">
+                                    <div ref={googleButtonRef} className="w-full"></div>
+                                </div>
+                            </div>
 
                             <Button
                                 variant="outline"
                                 onClick={handleGuest}
-                                className="w-full h-12 border-slate-700 hover:bg-slate-800 hover:text-white"
+                                className="w-full h-12 border-slate-700 hover:bg-slate-800 hover:text-white rounded-full transition-all duration-300"
                                 disabled={loading}
                             >
                                 <Play size={18} className="mr-2" />

@@ -38,13 +38,13 @@
 }
 
 .visualCard {
-    @apply bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-8 shadow-2xl relative overflow-hidden;
-    aspect-ratio: 2.2/1;
-    min-height: 300px;
+    @apply bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-4 sm:p-8 shadow-2xl relative overflow-hidden;
+    aspect-ratio: auto;
+    min-height: 250px;
 }
 
 .heroTitle {
-    @apply text-5xl md:text-7xl font-heading font-extrabold mb-6 tracking-tight leading-tight;
+    @apply text-4xl sm:text-5xl md:text-7xl font-heading font-extrabold mb-6 tracking-tight leading-tight;
 }
 
 .titleGradient {
