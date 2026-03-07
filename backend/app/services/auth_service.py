@@ -142,6 +142,12 @@ class AuthService:
             return result.scalar_one()
 
     @staticmethod
+    async def register_user(
+        db: AsyncSession, 
+        email: str, 
+        password: str, 
+        first_name: str, 
+        last_name: Optional[str] = None
     ) -> Tuple[Optional[User], str, str]:
         """
         Register a new user (Standard 1FA). Returns (user, error, recovery_code).
