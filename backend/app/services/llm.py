@@ -314,7 +314,7 @@ class EnhancedGenerativeAIClient:
         self.settings = get_settings()
         self.use_mock = not bool(self.settings.gemini_api_key)
         self._client = None
-        self._model_name = self.settings.vertex_model or "gemini-2.5-flash"
+        self._model_name = self.settings.vertex_model or "gemini-2.0-flash"
 
     def _ensure_client(self) -> None:
         if self._client is not None:
