@@ -263,3 +263,24 @@ class AuthService:
         user.provider = "local"
         await db.commit()
         return True, "Password reset successfully"
+
+    @staticmethod
+    async def generate_legacy_recovery_code(db: AsyncSession, user_id: uuid.UUID) -> Tuple[bool, str, str]:
+        """
+        Generate a recovery code for an existing user who doesn't have one.
+        Can only be done ONCE in a lifetime.
+        """
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalar_one_or_none()
+        
+        if not user:
+            return False, "User not found", ""
+            
+        if user.recovery_code_hash:
+            return False, "Recovery code already exists and can only be set once.", ""
+            
+        recovery_code = generate_recovery_code()
+        user.recovery_code_hash = hash_recovery_code(recovery_code)
+        
+        await db.commit()
+        return True, "Recovery code generated successfully. Please save it safely.", recovery_code

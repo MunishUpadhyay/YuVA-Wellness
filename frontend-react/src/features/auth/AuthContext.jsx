@@ -169,54 +169,36 @@ export const AuthProvider = ({ children }) => {
 
     const changePassword = async (currentPassword, newPassword, recoveryCode = null) => {
         try {
-            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.CHANGE_PASSWORD}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    current_password: currentPassword,
-                    recovery_code: recoveryCode,
-                    new_password: newPassword
-                })
+            const result = await ApiClient.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
+                current_password: currentPassword,
+                recovery_code: recoveryCode,
+                new_password: newPassword
             });
-
-            const data = await response.json();
-            if (!response.ok) {
-                return { success: false, error: data.detail || 'Failed to update password' };
-            }
-
-            return { success: true, message: data.message };
+            return result;
         } catch (error) {
-            console.error('Password update error:', error);
-            return { success: false, error: 'Network error occurred while updating password' };
+            return { success: false, error: error.message };
         }
     };
 
     const resetPasswordWithRecovery = async (email, recoveryCode, newPassword) => {
         try {
-            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.RESET_PASSWORD_RECOVERY}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email,
-                    recovery_code: recoveryCode,
-                    new_password: newPassword
-                })
+            const result = await ApiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD_RECOVERY, {
+                email,
+                recovery_code: recoveryCode,
+                new_password: newPassword
             });
-
-            const data = await response.json();
-            if (!response.ok) {
-                return { success: false, error: data.detail || 'Failed to reset password' };
-            }
-
-            return { success: true, message: data.message };
+            return result;
         } catch (error) {
-            console.error('Recovery reset error:', error);
-            return { success: false, error: 'Network error occurred during reset' };
+            return { success: false, error: error.message };
+        }
+    };
+
+    const generateRecoveryCode = async () => {
+        try {
+            const result = await ApiClient.post(API_ENDPOINTS.AUTH.RECOVERY_CODE, {});
+            return result;
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     };
 
@@ -242,10 +224,8 @@ export const AuthProvider = ({ children }) => {
         logout,
         changePassword,
         resetPasswordWithRecovery,
-        setUser,
-        forgotPassword,
-        verifyResetOTP,
-        resetPassword
+        generateRecoveryCode,
+        setUser
     };
 
     return (

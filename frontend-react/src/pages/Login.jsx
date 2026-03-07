@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/useAuth';
-import { Eye, EyeOff, LogIn, UserPlus, Play, AlertTriangle, Info, Phone, LifeBuoy, User } from 'lucide-react';
+import { Eye, EyeOff, LogIn, UserPlus, Play, AlertTriangle, Info, Phone, LifeBuoy, User, Shield } from 'lucide-react';
 import styles from '../styles/pages/Login.module.css';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';

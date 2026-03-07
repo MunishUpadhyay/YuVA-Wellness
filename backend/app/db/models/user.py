@@ -106,6 +106,10 @@ class User(Base):
         nullable=False
     )
     
+    @property
+    def has_recovery_code(self) -> bool:
+        return self.recovery_code_hash is not None
+
     def __repr__(self) -> str:
         user_type = "guest" if self.is_guest else "registered"
         identifier = self.email if self.email else str(self.client_id)[:8]

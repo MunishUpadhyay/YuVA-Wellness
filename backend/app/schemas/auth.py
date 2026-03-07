@@ -63,6 +63,7 @@ class UserResponse(BaseModel):
     last_name: Optional[str] = None
     is_guest: bool
     is_active: bool
+    has_recovery_code: bool = False
     created_at: datetime
     updated_at: datetime       
 

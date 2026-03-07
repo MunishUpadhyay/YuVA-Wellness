@@ -221,6 +221,26 @@ async def reset_password_recovery(
         
     return {"message": message}
 
+@router.post("/recovery-code")
+async def generate_recovery_code(
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Generate recovery code for legacy users (Once-in-a-lifetime).
+    """
+    success, message, code = await AuthService.generate_legacy_recovery_code(
+        db, current_user.id
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message
+        )
+        
+    return {"message": message, "recovery_code": code}
+
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
     current_user: UserResponse = Depends(get_current_user)
