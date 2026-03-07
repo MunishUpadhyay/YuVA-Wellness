@@ -179,17 +179,21 @@ class AuthService:
                 client_id=uuid.uuid4(),
                 email=email,
                 password_hash=password_hash,
-                # recovery_code_hash removed - will be generated at login
+                recovery_code_hash=None, # Placeholder
                 first_name=first_name,
                 last_name=last_name,
                 is_guest=False,
                 is_active=True,
                 provider="local"
             )
+            recovery_code = generate_recovery_code()
+            new_user.recovery_code_hash = hash_recovery_code(recovery_code)
+            new_user.recovery_code_shown = False
+            
             db.add(new_user)
             await db.commit()
             await db.refresh(new_user)
-            return new_user, "", "" # Returning empty recovery code
+            return new_user, "", recovery_code
         except IntegrityError:
             await db.rollback()
             return None, "User already registered", ""

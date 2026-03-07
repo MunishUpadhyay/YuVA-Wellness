@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
                 }
 
                 setUser(userData);
-                return { success: true };
+                return { success: true, recovery_code: data.recovery_code };
             } else {
                 setError(result.error);
                 return { success: false, error: result.error };
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
                 }
 
                 setUser(userData);
-                return { success: true };
+                return { success: true, recovery_code: data.recovery_code };
             } else {
                 setError(result.error);
                 return { success: false, error: result.error };
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
                 }
 
                 setUser(userData);
-                return { success: true };
+                return { success: true, recovery_code: data.recovery_code };
             } else {
                 setError(result.error);
                 return { success: false, error: result.error };

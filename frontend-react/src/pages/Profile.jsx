@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../features/auth/useAuth';
-import { User, Shield, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { User, Shield, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader, Lightbulb } from 'lucide-react';
 import styles from '../styles/pages/Profile.module.css';
 import { cn } from '../utils/utils';
 

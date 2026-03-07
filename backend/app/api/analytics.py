@@ -87,16 +87,15 @@ async def get_dashboard_data(
     )
     journal_entries = journal_result.scalars().all()
     
-    # Get mood entries for current user
+    # Get mood entries for current user (Remove limit for score accuracy)
     mood_result = await db.execute(
         select(MoodLog)
         .where(MoodLog.user_id == current_user.id)
         .order_by(MoodLog.logged_date.desc())
-        .limit(30)
     )
     mood_entries = mood_result.scalars().all()
     
-    # Mood distribution
+    # Calculate statistics based on available history
     mood_counts = {}
     total_score = 0
     count = 0
@@ -106,7 +105,6 @@ async def get_dashboard_data(
 
     for mood in mood_entries:
         mood_counts[mood.mood] = mood_counts.get(mood.mood, 0) + 1
-        # Use score from DB if available, else fallback to mapping
         score = float(mood.score) if mood.score else mood_scores.get(mood.mood, 3)
         total_score += score
         count += 1
