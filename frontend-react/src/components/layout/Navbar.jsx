@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../features/auth/useAuth';
-import { Menu, X, Home, Heart, MessageCircle, Book, BarChart2, LayoutDashboard, LifeBuoy, LogOut, LogIn } from 'lucide-react';
+import { Menu, X, Home, Heart, MessageCircle, Book, BarChart2, LayoutDashboard, LifeBuoy, LogOut, LogIn, User } from 'lucide-react';
 import { cn } from '../../utils/utils';
 import styles from '../../styles/components/Navbar.module.css';
 import { Button } from '../ui/Button';
