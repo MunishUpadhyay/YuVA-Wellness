@@ -181,24 +181,33 @@ class AuthService:
             return None, "User already registered"
 
     @staticmethod
-    async def update_password(db: AsyncSession, user_id: uuid.UUID, new_password: str) -> Tuple[bool, str]:
+    async def validate_and_change_password(
+        db: AsyncSession, 
+        user_id: uuid.UUID, 
+        current_password: str, 
+        new_password: str
+    ) -> Tuple[bool, str]:
         """
-        Update a user's password.
+        Verify current password and update to a new one.
         """
-        # Validate password strength
-        is_valid, error_msg = is_password_strong(new_password)
-        if not is_valid:
-            return False, error_msg
-
         # Fetch user
         result = await db.execute(select(User).where(User.id == user_id))
         user = result.scalar_one_or_none()
         
-        if not user:
+        if not user or user.is_guest:
             return False, "User not found"
 
-        # Update password
+        # Special case: Google-only users might not have a password_hash yet
+        if user.password_hash:
+            if not verify_password(current_password, user.password_hash):
+                return False, "Incorrect current password"
+        
+        # Validate and update
+        is_valid, error_msg = is_password_strong(new_password)
+        if not is_valid:
+            return False, error_msg
+
         user.password_hash = hash_password(new_password)
-        user.provider = "local" # Ensure they can login with password
+        user.provider = "local" # Ensure they can always login with local password now
         await db.commit()
         return True, "Password updated successfully"

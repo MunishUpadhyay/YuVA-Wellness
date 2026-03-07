@@ -123,6 +123,16 @@ const Navbar = () => {
                                                     <p className="text-xs text-slate-400 truncate mt-0.5">{user.email}</p>
                                                 )}
                                             </div>
+                                            <div className="py-2 border-b border-slate-700/50">
+                                                <Link
+                                                    to="/profile"
+                                                    onClick={() => setIsProfileMenuOpen(false)}
+                                                    className="w-full flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
+                                                >
+                                                    <User size={16} className="mr-2" />
+                                                    My Profile
+                                                </Link>
+                                            </div>
                                             <div className="py-2">
                                                 <button
                                                     onClick={() => {
@@ -176,14 +186,17 @@ const Navbar = () => {
 
                     <div className="border-t border-white/10 pt-4 mt-2">
                         {user ? (
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                            >
-                                <LogOut size={20} className="mr-3" />
-                                Logout
-                            </Button>
+                            <>
+                                <MobileNavLink to="/profile" icon={User} label="Profile" />
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                                >
+                                    <LogOut size={20} className="mr-3" />
+                                    Logout
+                                </Button>
+                            </>
                         ) : (
                             <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                                 <Button variant="primary" className="w-full">

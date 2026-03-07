@@ -11,7 +11,8 @@ export const API_ENDPOINTS = {
         RESEND_OTP: '/api/auth/resend-otp',
         FORGOT_PASSWORD: '/api/auth/forgot-password',
         VERIFY_RESET_OTP: '/api/auth/verify-reset-otp',
-        RESET_PASSWORD: '/api/auth/reset-password'
+        RESET_PASSWORD: '/api/auth/reset-password',
+        CHANGE_PASSWORD: '/api/auth/change-password'
     },
     MOODS: {
         BASE: '/api/moods',

@@ -167,6 +167,32 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const changePassword = async (currentPassword, newPassword) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.CHANGE_PASSWORD}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                return { success: false, error: data.detail || 'Failed to update password' };
+            }
+
+            return { success: true, message: data.message };
+        } catch (error) {
+            console.error('Password update error:', error);
+            return { success: false, error: 'Network error occurred while updating password' };
+        }
+    };
+
     const logout = async () => {
         try {
             await ApiClient.post(API_ENDPOINTS.AUTH.LOGOUT, {});
@@ -187,6 +213,7 @@ export const AuthProvider = ({ children }) => {
         register,
         loginAsGuest,
         logout,
+        changePassword,
         setUser,
         forgotPassword,
         verifyResetOTP,

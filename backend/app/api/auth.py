@@ -11,7 +11,7 @@ from app.core.config import get_settings
 from app.schemas.auth import (
     RegisterRequest, LoginRequest, AuthResponse, 
     GuestResponse, LogoutResponse, UserResponse,
-    GoogleLoginRequest
+    GoogleLoginRequest, PasswordChangeRequest
 )
 from app.services.auth_service import AuthService
 from app.core.security import create_access_token
@@ -177,6 +177,27 @@ async def logout(response: Response):
     """Logout"""
     response.delete_cookie(key="client_id")
     return LogoutResponse(message="Logged out successfully")
+
+@router.post("/change-password")
+async def change_password(
+    request: PasswordChangeRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Change password for authenticated user.
+    """
+    success, message = await AuthService.validate_and_change_password(
+        db, current_user.id, request.current_password, request.new_password
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message
+        )
+        
+    return {"message": message}
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(

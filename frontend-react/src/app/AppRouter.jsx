@@ -13,6 +13,7 @@ import Chat from '../features/chat/Chat';
 import Journal from '../features/journal/Journal';
 import Analytics from '../pages/Analytics';
 import Resources from '../pages/Resources';
+import Profile from '../pages/Profile';
 // Ensure Navbar is inside a Layout if needed
 import Navbar from '../components/layout/Navbar';
 import PageTransition from '../components/layout/PageTransition';
@@ -47,6 +48,7 @@ const AnimatedRoutes = () => {
                     <Route path="/chat" element={<Layout><Chat /></Layout>} />
                     <Route path="/journal" element={<Layout><Journal /></Layout>} />
                     <Route path="/analytics" element={<Layout><Analytics /></Layout>} />
+                    <Route path="/profile" element={<Layout><Profile /></Layout>} />
                 </Route>
 
                 {/* Catch all - Redirect to Home */}

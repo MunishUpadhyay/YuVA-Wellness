@@ -35,6 +35,11 @@ class LoginRequest(BaseModel):
     identifier: str # email or phone
     password: str
 
+class PasswordChangeRequest(BaseModel):
+    """Request to change password while logged in"""
+    current_password: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
 class ForgotPasswordRequest(BaseModel):
     """Stage 1 Forgot Password: Email submission"""
     email: EmailStr
