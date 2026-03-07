@@ -1,173 +1,94 @@
+# 🌿 YuVA Wellness: Your Empathetic AI Companion
+
 <div align="center">
-  <h1>🌿 YuVA Wellness</h1>
-  <p><b>A culturally-aware mental health and wellness platform designed specifically for youth.</b></p>
-  <p>
-    <a href="#-features">Features</a> •
-    <a href="#-tech-stack">Tech Stack</a> •
-    <a href="#-folder-structure">Folder Structure</a> •
-    <a href="#-quick-start">Quick Start</a> •
-    <a href="#-deployment">Deployment</a>
-  </p>
+  <img src="https://img.shields.io/badge/Health-%23FF6B6B?style=for-the-badge&logo=heart&logoColor=white" alt="Health" />
+  <img src="https://img.shields.io/badge/AI-Gemini%20Flash-blue?style=for-the-badge&logo=google-gemini&logoColor=white" alt="AI" />
+  <img src="https://img.shields.io/badge/Security-Safety%20Net-green?style=for-the-badge&logo=shield&logoColor=white" alt="Security" />
+  <img src="https://img.shields.io/badge/Stack-FastAPI%20%26%20React-darkblue?style=for-the-badge&logo=fastapi&logoColor=white" alt="Stack" />
 </div>
+
+<br />
+
+> **YuVA Wellness** is a culturally-aware mental health and wellness platform designed specifically for youth. It combines high-precision analytics with empathetic AI to provide a safe space for reflection and support.
 
 ---
 
-## 🌟 Overview
+## 🔗 Live Experience
+🚀 **Frontend:** [yuva-wellness.vercel.app](https://yuva-wellness.vercel.app)  
+⚙️ **Backend API:** [yuva-wellness-gzhr.onrender.com](https://yuva-wellness-gzhr.onrender.com)
 
-**YuVA Wellness** is a full-stack mental health application designed to provide a safe, empathetic, and culturally relevant space for youth. It offers tools for self-reflection, emotion tracking, and AI-driven support, helping users better understand and navigate their mental wellness journey.
+---
 
-## ✨ Features
+## 🎯 The Use Case
+Modern youth face unique pressures—from academic stress to social dynamics—often without a judgment-free space to process their emotions. **YuVA** (meaning "Youth" in Sanskrit) bridges this gap by providing:
+1. **Immediate Support**: AI that understands the emotional nuances of Indian youth.
+2. **Data-Driven Self-Awareness**: Visualizing mood patterns to identify triggers before they become overwhelming.
+3. **Safety First Architecture**: Built-in crisis detection and secure recovery systems.
 
-- **📊 Mood Tracking:** Log your daily emotional state with detailed insights and identify long-term patterns.
-- **📓 Mindful Journaling:** A secure, private space to express thoughts, practice gratitude, and reflect.
-- **🤖 AI Companion (Gemini-Powered):** An empathetic, culturally-aware conversational agent designed to provide support, guidance, and critical crisis detection.
-- **📉 Assessment Check-ins:** Structured mental health reflections that provide deep insights into your current state.
-- **🔐 Secure Authentication:** Robust user authentication with OTP-verified login and a full **Forgot Password** recovery flow.
-- **🔄 Chat Persistence:** Seamless conversation state that persists across page navigations within the session.
-- **✨ Smooth Transitions:** Polished UI experience with synchronized scroll restoration and fluid animations.
+---
+
+## 🔥 Key Features
+
+### 🤖 Multi-Model AI Chat
+Choose your intelligence level! YuVA now supports real-time switching between four powerful Gemini models:
+- **🚀 Gemini 1.5 Flash**: Lightning-fast, reliable support (Default).
+- **🧠 Gemini 1.5 Pro**: Deep reasoning for complex emotional reflections.
+- **⚡ Gemini 2.0 Lite**: Cutting-edge efficiency and speed.
+- **🔥 Gemini 2.0 Flash**: Premium high-performance interactions.
+
+### 📊 Precision Wellness Analytics
+- **Real-Time Scoring**: A live wellness percentage based on your entire mood history.
+- **Insightful Guidance**: Dynamic feedback that tells you exactly how to improve your scores.
+- **Visual Trends**: Beautifully rendered charts showing your emotional journey over time.
+
+### 🛡️ The "Safety Net" Infrastructure
+- **Secure Authentication**: Robust system featuring **Google OAuth 2.0** and standard email/password login.
+- **Recovery Key System**: Never get locked out. Automatic generation of secure recovery keys during signup.
+- **Crisis Detection Layer**: Deterministic keyword mapping that triggers immediate support resources if high distress is detected.
+
+### 🧪 Modern Technical Excellence
+- **Fluid UI**: Synchronized page transitions and scroll restoration using Framer Motion.
+- **Asynchronous Cloud Architecture**: High-concurrency FastAPI backend with decoupled React frontend.
+- **Hardenened Security**: Multi-layered password hashing and secure token management.
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React.js** + **Vite** for a blazingly fast development experience.
-- **Tailwind CSS** for modern, responsive, and highly customizable styling.
-- **Framer Motion** for smooth, synchronized page and component transitions.
-- **Deployment:** Vercel
-
-### Backend
-- **Python 3** + **FastAPI** for high-performance, asynchronous REST API delivery.
-- **SQLAlchemy** (async) + **PostgreSQL** for robust data modeling and persistence.
-- **Google GenAI SDK** for advanced, empathetic AI integration (Gemini 2.5 Flash).
-- **Deployment:** Render (Free Tier) with a Keep-Alive Cron Setup.
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React 18, Vite, Tailwind CSS, Framer Motion |
+| **Backend** | Python 3.12, FastAPI, SQLAlchemy (Async) |
+| **AI / LLM** | Google Gemini API (1.5 & 2.0 Versions) |
+| **Database** | PostgreSQL |
+| **Auth** | Google OAuth 2.0-based Verification |
 
 ---
 
-## 📂 Folder Structure
-
-The repository is organized independently to allow decoupled scaling and deployments.
+## 📂 Project Architecture
 
 ```text
 GenAI/
-├── backend/                       # 🐍 Python FastAPI Backend
-│   ├── alembic/                   # Database migration configurations
-│   ├── app/                       # Main application codebase
-│   │   ├── api/                   # API routes and endpoints (auth, chat, mood, etc.)
-│   │   ├── core/                  # Core configurations (security, settings, CORS)
-│   │   ├── db/                    # Database session, models, and migrations
-│   │   ├── schemas/               # Pydantic schemas for data validation/serialization
-│   │   ├── services/              # Business logic (AI processing, email, user management)
-│   │   ├── main.py                # FastAPI entry point & application factory
-│   │   └── middleware.py          # Custom logging and error-handling middleware
-│   ├── requirements.txt           # Python dependencies
-│   ├── alembic.ini                # Alembic configuration
-│   └── Procfile                   # Deployment configuration for Render
+├── backend/                       # 🐍 Python Asynchronous Backend (FastAPI)
+│   ├── app/
+│   │   ├── api/                   # Analytics, AI Chat, Auth, Moods, Journal
+│   │   ├── services/              # LLM Client, Email, Auth Logic, Safety Layers
+│   │   ├── db/                    # Models & Migrations (SQLAlchemy)
+│   │   └── core/                  # Configuration & Security Settings
 │
-└── frontend-react/                # ⚛️ React.js Frontend
-    ├── src/                       # Main React source code
-    │   ├── app/                   # App-wide providers (Auth, Chat), Routing
-    │   ├── components/            # Reusable UI components (Layouts, UI, Transitions)
-    │   ├── features/              # Feature-focused modules
-    │   │   ├── auth/              # Auth context, protected routes, login/forgot forms
-    │   │   └── chat/              # Chat component, Context API persistence logic
-    │   ├── pages/                 # Top-level page components (views)
-    │   ├── services/              # API Client and service integrations
-    │   ├── styles/                # Global and specific CSS modules
-    │    index.css                 # Main Tailwind CSS entrypoint
-    ├── package.json               # Node.js dependencies and scripts
-    ├── vite.config.js             # Vite bundler configuration
-    └── tailwind.config.js         # Tailwind CSS styling configuration
+└── frontend-react/                # ⚛️ React.js Responsive Frontend (Vite)
+    ├── src/
+    │   ├── features/              # Modular ChatContext, AuthContext, Mood Tracking
+    │   ├── components/            # UI System, Page Transitions, Layouts
+    │   ├── services/              # API Client (Axios-based)
+    │   └── pages/                 # Dashboard, Analytics, Chat, Profile
 ```
-
----
-
-## 🚀 Quick Start (Local Development)
-
-### 1. Clone the repository
-```bash
-git clone <your-repo-url>
-cd GenAI
-```
-
-### 2. Backend Setup
-Navigate to the backend directory and set up your virtual environment:
-```bash
-cd backend
-python -m venv venv
-
-# On macOS/Linux:
-source venv/bin/activate  
-# On Windows:
-venv\Scripts\activate
-
-pip install -r requirements.txt
-```
-
-**Environment Variables (`backend/.env`):**
-Create a `.env` file in the `backend/` directory. You will need:
-```env
-# Database Configuration
-DATABASE_URL=postgresql+asyncpg://user:password@localhost/dbname
-
-# Security Configuration
-SECRET_KEY=your_super_secret_key_here
-
-# AI Configuration
-GEMINI_API_KEY=your_google_gemini_api_key
-```
-
-**Run the Backend:**
-```bash
-uvicorn app.main:app --reload
-```
-*API runs locally at `http://localhost:8000`*
-
-### 3. Frontend Setup
-Navigate to the frontend directory:
-```bash
-cd ../frontend-react
-npm install
-```
-
-**Environment Variables (`frontend-react/.env`):**
-Create a `.env` file in the `frontend-react/` directory:
-```env
-VITE_API_URL=http://localhost:8000
-```
-
-**Run the Frontend:**
-```bash
-npm run dev
-```
-*App runs locally at `http://localhost:5173`*
-
----
-
-## 🌐 Deployment
-
-The project is structured to be deployed independently. 
-
-### Frontend (Vercel)
-- **Framework:** Vite
-- **Build Command:** `npm run build`
-- **Output Directory:** `dist`
-- **Configuration:** Ensure `VITE_API_URL` is set to the production backend URL in your Vercel Environment Variables.
-
-### Backend (Render Web Service)
-- **Environment:** Dedicated Python Web Service
-- **Build Command:** `pip install -r requirements.txt`
-- **Start Command (via Procfile):** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- **Environment Variables:** Set up `DATABASE_URL`, `SECRET_KEY`, and `GEMINI_API_KEY` directly in the Render dashboard.
-
-### ⏱️ Keep-Alive Cron Job
-Because the Render Free Tier spins down inactive instances after 15 minutes, the backend features a zero-dependency, ultra-fast `GET /health` endpoint.
-- Configure an external cron service (like [cron-job.org](https://cron-job.org/)) to hit `https://your-backend-url.onrender.com/health` every 10-14 minutes to ensure backend availability is maintained seamlessly without causing database strain.
 
 ---
 
 ## 🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page or submit a Pull Request.
+YuVA is a mission-driven project. Contributions to its empathetic response patterns or analytics precision are always welcome.
 
 ## 📝 License
-This project is licensed under the MIT License.
+Licensed under the [MIT License](LICENSE). 
+*Designed with ❤️ for a healthier youth.*
