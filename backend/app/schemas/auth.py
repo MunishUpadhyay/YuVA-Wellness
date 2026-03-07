@@ -37,12 +37,19 @@ class LoginRequest(BaseModel):
 
 class PasswordChangeRequest(BaseModel):
     """Request to change password while logged in"""
-    current_password: str
+    current_password: Optional[str] = None
+    recovery_code: Optional[str] = None
     new_password: str = Field(..., min_length=8, max_length=128)
 
 class ForgotPasswordRequest(BaseModel):
     """Stage 1 Forgot Password: Email submission"""
     email: EmailStr
+
+class RecoveryCodeResetRequest(BaseModel):
+    """Request to reset password using recovery code"""
+    email: EmailStr
+    recovery_code: str = Field(..., min_length=8, max_length=12)
+    new_password: str = Field(..., min_length=8, max_length=128)
 
 # Response schemas
 
@@ -73,6 +80,7 @@ class AuthResponse(BaseModel):
     temp_token: Optional[str] = None
     access_token: Optional[str] = None
     refresh_token: Optional[str] = None
+    recovery_code: Optional[str] = None # Only provided during registration
 
 
 class GuestResponse(BaseModel):

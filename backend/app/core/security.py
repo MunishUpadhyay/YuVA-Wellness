@@ -128,6 +128,17 @@ def hash_otp(otp: str) -> str:
     """Hash OTP code using SHA256"""
     return hashlib.sha256(otp.encode('utf-8')).hexdigest()
 
+def generate_recovery_code(length: int = 10) -> str:
+    """Generate a random alphanumeric recovery code"""
+    import secrets
+    import string
+    alphabet = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+def hash_recovery_code(code: str) -> str:
+    """Hash recovery code using SHA256"""
+    return hashlib.sha256(code.encode('utf-8')).hexdigest()
+
 
 # ------------------------------------------------------------------------------
 # JWT Utilities

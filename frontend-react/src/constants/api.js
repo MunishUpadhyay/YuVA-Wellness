@@ -12,7 +12,8 @@ export const API_ENDPOINTS = {
         FORGOT_PASSWORD: '/api/auth/forgot-password',
         VERIFY_RESET_OTP: '/api/auth/verify-reset-otp',
         RESET_PASSWORD: '/api/auth/reset-password',
-        CHANGE_PASSWORD: '/api/auth/change-password'
+        CHANGE_PASSWORD: '/api/auth/change-password',
+        RESET_PASSWORD_RECOVERY: '/api/auth/reset-password-recovery'
     },
     MOODS: {
         BASE: '/api/moods',

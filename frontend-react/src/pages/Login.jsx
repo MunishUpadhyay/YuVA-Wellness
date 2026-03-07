@@ -10,20 +10,25 @@ import { cn } from '../utils/utils';
 
 const Login = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [isResetMode, setIsResetMode] = useState(false);
 
     // Form States
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const [recoveryCode, setRecoveryCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     // UI States
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ text: '', type: '' });
     const [isCrisisModalOpen, setIsCrisisModalOpen] = useState(false);
+    const [showRecoveryModal, setShowRecoveryModal] = useState(false);
+    const [generatedCode, setGeneratedCode] = useState('');
 
-    const { login, googleLogin, register, loginAsGuest } = useAuth();
+    const { login, googleLogin, register, loginAsGuest, resetPasswordWithRecovery } = useAuth();
     const navigate = useNavigate();
     const googleButtonRef = useRef(null);
 
@@ -42,10 +47,7 @@ const Login = () => {
             }
         };
 
-        // Hardcoding the ID just to be 100% sure Vite's .env isn't the bottleneck right now
         const GOOGLE_CLIENT_ID = "9078763119-vh2on0ncvmdo88hrb5p65uijjcgqtgum.apps.googleusercontent.com";
-        console.log('[Google Auth] Initializing with Client ID:', GOOGLE_CLIENT_ID);
-
         window.google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleCredentialResponse,
@@ -61,6 +63,8 @@ const Login = () => {
         setMessage({ text: '', type: '' });
         setFirstName('');
         setLastName('');
+        setRecoveryCode('');
+        setNewPassword('');
     };
 
     const handleSubmit = async (e) => {
@@ -69,12 +73,25 @@ const Login = () => {
         setMessage({ text: '', type: '' });
 
         try {
-            if (!isLogin) {
+            if (isResetMode) {
+                // Password Reset with Recovery Code
+                const result = await resetPasswordWithRecovery(email, recoveryCode, newPassword);
+                if (result.success) {
+                    setMessage({ text: 'Password reset successful! You can now log in.', type: 'success' });
+                    setTimeout(() => {
+                        setIsResetMode(false);
+                        setIsLogin(true);
+                        clearState();
+                    }, 2000);
+                } else {
+                    setMessage({ text: result.error || 'Reset failed.', type: 'error' });
+                }
+            } else if (!isLogin) {
                 // Register
                 const result = await register(email, password, firstName, lastName);
                 if (result.success) {
-                    setMessage({ text: 'Welcome! Redirecting...', type: 'success' });
-                    setTimeout(() => navigate('/'), 1000);
+                    setGeneratedCode(result.recovery_code);
+                    setShowRecoveryModal(true);
                 } else {
                     setMessage({ text: result.error || 'Registration failed.', type: 'error' });
                 }
@@ -109,6 +126,7 @@ const Login = () => {
 
     const toggleMode = () => {
         setIsLogin(!isLogin);
+        setIsResetMode(false);
         clearState();
     };
 
@@ -156,92 +174,156 @@ const Login = () => {
                         <h1 className="text-2xl font-bold text-white">YuVA Wellness</h1>
                     </div>
 
-                    <div className="text-center lg:text-left">
+                    <div className={cn("text-center lg:text-left", showRecoveryModal && "opacity-20 pointer-events-none")}>
                         <h1 className="text-3xl font-bold text-white mb-2">
-                            {isLogin ? 'Welcome Back' : 'Create Account'}
+                            {isResetMode ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create Account'}
                         </h1>
                         <p className="text-slate-400">
-                            {isLogin ? 'Sign in to access your wellness dashboard' : 'Start your journey with us today'}
+                            {isResetMode
+                                ? 'Use your unique recovery code to set a new password'
+                                : isLogin
+                                    ? 'Sign in to access your wellness dashboard'
+                                    : 'Start your journey with us today'}
                         </p>
                     </div>
 
-                    {/* Social Auth Buttons */}
-                    <div className="grid grid-cols-1 gap-4">
-                        {/* Google Button Container */}
-                        <div ref={googleButtonRef} className="w-full overflow-hidden rounded-lg"></div>
+                    {!isResetMode && (
+                        <div className={cn("grid grid-cols-1 gap-4", showRecoveryModal && "opacity-20 pointer-events-none")}>
+                            <div ref={googleButtonRef} className="w-full overflow-hidden rounded-lg"></div>
 
-                        <Button
-                            variant="outline"
-                            onClick={handleGuest}
-                            className="w-full h-12 border-slate-700 hover:bg-slate-800 hover:text-white"
-                            disabled={loading}
-                        >
-                            <Play size={18} className="mr-2" />
-                            Continue as Guest
-                        </Button>
-                    </div>
+                            <Button
+                                variant="outline"
+                                onClick={handleGuest}
+                                className="w-full h-12 border-slate-700 hover:bg-slate-800 hover:text-white"
+                                disabled={loading}
+                            >
+                                <Play size={18} className="mr-2" />
+                                Continue as Guest
+                            </Button>
+                        </div>
+                    )}
 
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-slate-800"></span>
+                    {!isResetMode && (
+                        <div className={cn("relative", showRecoveryModal && "opacity-20 pointer-events-none")}>
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-slate-800"></span>
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-slate-950 px-2 text-slate-500">Or continue with email</span>
+                            </div>
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-slate-950 px-2 text-slate-500">Or continue with email</span>
-                        </div>
-                    </div>
+                    )}
 
                     {/* Auth Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        {!isLogin && (
-                            <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                    <form onSubmit={handleSubmit} className={cn("space-y-4", showRecoveryModal && "opacity-20 pointer-events-none")}>
+                        {isResetMode ? (
+                            <div className="space-y-4 animate-fade-in">
                                 <Input
-                                    name="firstName"
-                                    placeholder="First Name"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
+                                    type="email"
+                                    name="email"
+                                    placeholder="Confirm Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                     disabled={loading}
+                                    icon={User}
                                 />
                                 <Input
-                                    name="lastName"
-                                    placeholder="Last Name (Optional)"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
+                                    type="text"
+                                    name="recoveryCode"
+                                    placeholder="10-Digit Recovery Code"
+                                    value={recoveryCode}
+                                    onChange={(e) => setRecoveryCode(e.target.value)}
+                                    required
                                     disabled={loading}
+                                    icon={Shield}
                                 />
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        name="newPassword"
+                                        placeholder="Set New Password"
+                                        value={newPassword}
+                                        onChange={(e) => setNewPassword(e.target.value)}
+                                        required
+                                        disabled={loading}
+                                        minLength={8}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                             </div>
+                        ) : (
+                            <>
+                                {!isLogin && (
+                                    <div className="grid grid-cols-2 gap-4 animate-fade-in">
+                                        <Input
+                                            name="firstName"
+                                            placeholder="First Name"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                            required
+                                            disabled={loading}
+                                        />
+                                        <Input
+                                            name="lastName"
+                                            placeholder="Last Name"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            disabled={loading}
+                                        />
+                                    </div>
+                                )}
+
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email Address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    disabled={loading}
+                                    icon={User}
+                                />
+
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="Password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        disabled={loading}
+                                        minLength={isLogin ? undefined : 8}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
+
+                                {isLogin && (
+                                    <div className="text-right">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsResetMode(true)}
+                                            className="text-xs text-slate-500 hover:text-primary transition-colors"
+                                        >
+                                            Forgot your password?
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
-
-                        <Input
-                            type="email"
-                            name="email"
-                            placeholder="Email Address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            disabled={loading}
-                            icon={User}
-                        />
-
-                        <div className="relative">
-                            <Input
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                disabled={loading}
-                                minLength={isLogin ? undefined : 8}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-2.5 text-slate-400 hover:text-white transition-colors"
-                            >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                            </button>
-                        </div>
 
                         <Button
                             type="submit"
@@ -252,9 +334,19 @@ const Login = () => {
                             {loading ? (
                                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                             ) : (
-                                isLogin ? 'Sign In' : 'Create Account'
+                                isResetMode ? 'Reset Password' : isLogin ? 'Sign In' : 'Create Account'
                             )}
                         </Button>
+
+                        {isResetMode && (
+                            <button
+                                type="button"
+                                onClick={() => setIsResetMode(false)}
+                                className="w-full text-center text-sm text-slate-400 hover:text-white transition-colors mt-2"
+                            >
+                                Back to Login
+                            </button>
+                        )}
                     </form>
 
                     {/* Error Messages */}
@@ -271,15 +363,17 @@ const Login = () => {
                         </div>
                     )}
 
-                    <div className="text-center text-sm text-slate-400">
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <button
-                            onClick={toggleMode}
-                            className="text-primary hover:text-primary-light font-medium transition-colors"
-                        >
-                            {isLogin ? 'Sign up for free' : 'Log in'}
-                        </button>
-                    </div>
+                    {!isResetMode && (
+                        <div className={cn("text-center text-sm text-slate-400", showRecoveryModal && "opacity-20 pointer-events-none")}>
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <button
+                                onClick={toggleMode}
+                                className="text-primary hover:text-primary-light font-medium transition-colors"
+                            >
+                                {isLogin ? 'Sign up for free' : 'Log in'}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Crisis Button */}
@@ -295,6 +389,60 @@ const Login = () => {
                     </Button>
                 </div>
             </div>
+
+            {/* Recovery Code Modal */}
+            {showRecoveryModal && (
+                <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+                    <Card className="w-full max-w-md bg-slate-900 border-primary/30 shadow-2xl shadow-primary/20 overflow-hidden">
+                        <div className="p-8 text-center space-y-6">
+                            <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center border border-primary/20">
+                                <Shield className="text-primary" size={40} />
+                            </div>
+
+                            <div className="space-y-2">
+                                <h2 className="text-2xl font-bold text-white">Save Your Security Code</h2>
+                                <p className="text-slate-400 text-sm">
+                                    If you ever forget your password, this unique code is the **only way** to regain access to your account.
+                                </p>
+                            </div>
+
+                            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-6 relative group overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                <span className="text-3xl font-mono font-bold tracking-[0.3em] text-white relative z-10">
+                                    {generatedCode}
+                                </span>
+                            </div>
+
+                            <div className="flex flex-col gap-3">
+                                <Button
+                                    variant="primary"
+                                    className="w-full h-12"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(generatedCode);
+                                        setMessage({ text: 'Code copied! Please save it safely.', type: 'info' });
+                                    }}
+                                >
+                                    Copy Code
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full h-12 text-slate-400 hover:text-white"
+                                    onClick={() => {
+                                        setShowRecoveryModal(false);
+                                        navigate('/');
+                                    }}
+                                >
+                                    I've saved it, let's go!
+                                </Button>
+                            </div>
+
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                                Warning: We cannot recover this code for you.
+                            </p>
+                        </div>
+                    </Card>
+                </div>
+            )}
 
             {/* Crisis Modal */}
             {isCrisisModalOpen && (

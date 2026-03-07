@@ -63,6 +63,12 @@ class User(Base):
         comment="Profile picture URL from social provider"
     )
 
+    recovery_code_hash: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True,
+        comment="Hashed 8-digit recovery code for password reset"
+    )
+
     # Profile fields
     first_name: Mapped[Optional[str]] = mapped_column(
         String(100),

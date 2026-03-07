@@ -210,6 +210,50 @@
     cursor: not-allowed;
 }
 
+.recoveryToggle {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.toggleLink {
+    background: none;
+    border: none;
+    color: #6366f1;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+}
+
+.toggleLink:hover {
+    color: #818cf8;
+    text-decoration: underline;
+}
+
+.securityNotice {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.securityNotice p {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.securityNotice b {
+    color: #f1f5f9;
+}
+
 @media (max-width: 640px) {
     .container {
         padding: 1rem;

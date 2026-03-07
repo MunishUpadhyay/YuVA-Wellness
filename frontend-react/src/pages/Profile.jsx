@@ -11,12 +11,14 @@ const Profile = () => {
     const [passwords, setPasswords] = useState({
         current: '',
         new: '',
-        confirm: ''
+        confirm: '',
+        recovery: ''
     });
     const [showPasswords, setShowPasswords] = useState({
         current: false,
         new: false
     });
+    const [useRecovery, setUseRecovery] = useState(false);
 
     // UI State
     const [loading, setLoading] = useState(false);
@@ -46,11 +48,17 @@ const Profile = () => {
         }
 
         setLoading(true);
-        const result = await changePassword(passwords.current, passwords.new);
+        // Pass recovery code instead of current password if toggled
+        const result = await changePassword(
+            useRecovery ? null : passwords.current,
+            passwords.new,
+            useRecovery ? passwords.recovery : null
+        );
 
         if (result.success) {
             setMessage({ text: 'Password updated successfully!', type: 'success' });
-            setPasswords({ current: '', new: '', confirm: '' });
+            setPasswords({ current: '', new: '', confirm: '', recovery: '' });
+            setUseRecovery(false);
         } else {
             setMessage({ text: result.error, type: 'error' });
         }
@@ -91,6 +99,13 @@ const Profile = () => {
                             </span>
                         </div>
                     </div>
+
+                    <div className={styles.securityNotice}>
+                        <Shield className="text-indigo-400 mt-1" size={24} />
+                        <div>
+                            <p><b>Security Tip:</b> Your recovery code is your personal "safety net." If you ever lose access to your email or forget your password, it's the only way back in.</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Security Section */}
@@ -109,25 +124,38 @@ const Profile = () => {
                     <form onSubmit={handleSubmit}>
                         {!isGoogleUser && (
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>Current Password</label>
-                                <div className={styles.inputWrapper}>
-                                    <Lock className={styles.inputIcon} size={18} />
-                                    <input
-                                        type={showPasswords.current ? "text" : "password"}
-                                        name="current"
-                                        value={passwords.current}
-                                        onChange={handleChange}
-                                        className={styles.input}
-                                        placeholder="••••••••"
-                                        required
-                                    />
+                                <div className={styles.recoveryToggle}>
                                     <button
                                         type="button"
-                                        onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
-                                        className="absolute right-4 text-gray-400 hover:text-white"
+                                        className={styles.toggleLink}
+                                        onClick={() => setUseRecovery(!useRecovery)}
                                     >
-                                        {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        {useRecovery ? "Use current password instead" : "Forgot current password? Use recovery code"}
                                     </button>
+                                </div>
+                                <label className={styles.label}>
+                                    {useRecovery ? "Recovery Code" : "Current Password"}
+                                </label>
+                                <div className={styles.inputWrapper}>
+                                    {useRecovery ? <Shield className={styles.inputIcon} size={18} /> : <Lock className={styles.inputIcon} size={18} />}
+                                    <input
+                                        type={(!useRecovery && !showPasswords.current) ? "password" : "text"}
+                                        name={useRecovery ? "recovery" : "current"}
+                                        value={useRecovery ? passwords.recovery : passwords.current}
+                                        onChange={handleChange}
+                                        className={styles.input}
+                                        placeholder={useRecovery ? "10-Digit Code" : "••••••••"}
+                                        required
+                                    />
+                                    {!useRecovery && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                                            className="absolute right-4 text-gray-400 hover:text-white"
+                                        >
+                                            {showPasswords.current ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}

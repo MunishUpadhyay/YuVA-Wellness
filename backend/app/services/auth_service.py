@@ -11,7 +11,10 @@ from sqlalchemy import select, or_
 from sqlalchemy.exc import IntegrityError
 
 from app.db.models.user import User
-from ..core.security import hash_password, verify_password, is_password_strong
+from ..core.security import (
+    hash_password, verify_password, is_password_strong,
+    generate_recovery_code, hash_recovery_code
+)
 from ..core.config import get_settings
 
 from google.oauth2 import id_token
@@ -139,33 +142,30 @@ class AuthService:
             return result.scalar_one()
 
     @staticmethod
-    async def register_user(
-        db: AsyncSession, 
-        email: str,
-        password: str,
-        first_name: str,
-        last_name: Optional[str] = None
-    ) -> Tuple[Optional[User], str]:
+    ) -> Tuple[Optional[User], str, str]:
         """
-        Register a new user (Standard 1FA).
+        Register a new user (Standard 1FA). Returns (user, error, recovery_code).
         """
         # Validate password
         is_valid, error_msg = is_password_strong(password)
         if not is_valid:
-            return None, error_msg
+            return None, error_msg, ""
             
         # Check existence
         u = await AuthService.get_user_by_identifier(db, email)
         if u: 
-            return None, "Email already registered"
+            return None, "Email already registered", ""
             
         password_hash = hash_password(password)
+        recovery_code = generate_recovery_code()
+        recovery_code_hash = hash_recovery_code(recovery_code)
         
         try:
             new_user = User(
                 client_id=uuid.uuid4(),
                 email=email,
                 password_hash=password_hash,
+                recovery_code_hash=recovery_code_hash,
                 first_name=first_name,
                 last_name=last_name,
                 is_guest=False,
@@ -175,20 +175,21 @@ class AuthService:
             db.add(new_user)
             await db.commit()
             await db.refresh(new_user)
-            return new_user, ""
+            return new_user, "", recovery_code
         except IntegrityError:
             await db.rollback()
-            return None, "User already registered"
+            return None, "User already registered", ""
 
     @staticmethod
     async def validate_and_change_password(
         db: AsyncSession, 
         user_id: uuid.UUID, 
-        current_password: str, 
-        new_password: str
+        current_password: Optional[str], 
+        new_password: str,
+        recovery_code: Optional[str] = None
     ) -> Tuple[bool, str]:
         """
-        Verify current password and update to a new one.
+        Verify current password OR recovery code and update to a new one.
         """
         # Fetch user
         result = await db.execute(select(User).where(User.id == user_id))
@@ -197,10 +198,30 @@ class AuthService:
         if not user or user.is_guest:
             return False, "User not found"
 
-        # Special case: Google-only users might not have a password_hash yet
-        if user.password_hash:
+        verified = False
+        
+        # 1. Try recovery code first if provided
+        if recovery_code and user.recovery_code_hash:
+            if hash_recovery_code(recovery_code) == user.recovery_code_hash:
+                verified = True
+            else:
+                return False, "Invalid recovery code"
+
+        # 2. Then try current password if not already verified
+        if not verified and user.password_hash:
+            if not current_password:
+                return False, "Current password or recovery code is required"
             if not verify_password(current_password, user.password_hash):
                 return False, "Incorrect current password"
+            verified = True
+        
+        # 3. Handle edge case: Google user with no password hash and no recovery code provided
+        if not verified and not user.password_hash:
+            # If Google user, we allow setting password for the first time without current password
+            verified = True
+
+        if not verified:
+            return False, "Verification failed"
         
         # Validate and update
         is_valid, error_msg = is_password_strong(new_password)
@@ -211,3 +232,28 @@ class AuthService:
         user.provider = "local" # Ensure they can always login with local password now
         await db.commit()
         return True, "Password updated successfully"
+
+    @staticmethod
+    async def reset_password_with_recovery(
+        db: AsyncSession,
+        email: str,
+        recovery_code: str,
+        new_password: str
+    ) -> Tuple[bool, str]:
+        """Reset password using email and recovery code"""
+        user = await AuthService.get_user_by_identifier(db, email)
+        if not user or user.is_guest:
+            return False, "User not found"
+        
+        if not user.recovery_code_hash or hash_recovery_code(recovery_code) != user.recovery_code_hash:
+            return False, "Invalid recovery code"
+        
+        # Validate and update
+        is_valid, error_msg = is_password_strong(new_password)
+        if not is_valid:
+            return False, error_msg
+        
+        user.password_hash = hash_password(new_password)
+        user.provider = "local"
+        await db.commit()
+        return True, "Password reset successfully"

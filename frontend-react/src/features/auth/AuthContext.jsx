@@ -167,7 +167,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const changePassword = async (currentPassword, newPassword) => {
+    const changePassword = async (currentPassword, newPassword, recoveryCode = null) => {
         try {
             const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.CHANGE_PASSWORD}`, {
                 method: 'POST',
@@ -177,6 +177,7 @@ export const AuthProvider = ({ children }) => {
                 },
                 body: JSON.stringify({
                     current_password: currentPassword,
+                    recovery_code: recoveryCode,
                     new_password: newPassword
                 })
             });
@@ -190,6 +191,32 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             console.error('Password update error:', error);
             return { success: false, error: 'Network error occurred while updating password' };
+        }
+    };
+
+    const resetPasswordWithRecovery = async (email, recoveryCode, newPassword) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.RESET_PASSWORD_RECOVERY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    recovery_code: recoveryCode,
+                    new_password: newPassword
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                return { success: false, error: data.detail || 'Failed to reset password' };
+            }
+
+            return { success: true, message: data.message };
+        } catch (error) {
+            console.error('Recovery reset error:', error);
+            return { success: false, error: 'Network error occurred during reset' };
         }
     };
 
@@ -214,6 +241,7 @@ export const AuthProvider = ({ children }) => {
         loginAsGuest,
         logout,
         changePassword,
+        resetPasswordWithRecovery,
         setUser,
         forgotPassword,
         verifyResetOTP,

@@ -11,7 +11,8 @@ from app.core.config import get_settings
 from app.schemas.auth import (
     RegisterRequest, LoginRequest, AuthResponse, 
     GuestResponse, LogoutResponse, UserResponse,
-    GoogleLoginRequest, PasswordChangeRequest
+    GoogleLoginRequest, PasswordChangeRequest,
+    RecoveryCodeResetRequest
 )
 from app.services.auth_service import AuthService
 from app.core.security import create_access_token
@@ -113,7 +114,7 @@ async def register(
     Standard Registration: Create account instantly. 
     """
     # 1. Register user
-    user, error_msg = await AuthService.register_user(
+    user, error_msg, recovery_code = await AuthService.register_user(
         db, user_data.email, user_data.password,
         user_data.first_name, user_data.last_name
     )
@@ -135,8 +136,9 @@ async def register(
         
     return AuthResponse(
         user=UserResponse.model_validate(user),
-        message="Registration successful.",
-        access_token=access_token
+        message="Registration successful. Please save your recovery code: " + recovery_code,
+        access_token=access_token,
+        recovery_code=recovery_code
     )
 
 @router.post("/guest", response_model=GuestResponse)
@@ -188,7 +190,27 @@ async def change_password(
     Change password for authenticated user.
     """
     success, message = await AuthService.validate_and_change_password(
-        db, current_user.id, request.current_password, request.new_password
+        db, current_user.id, request.current_password, request.new_password, request.recovery_code
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=message
+        )
+        
+    return {"message": message}
+
+@router.post("/reset-password-recovery")
+async def reset_password_recovery(
+    request: RecoveryCodeResetRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Reset password using recovery code (For users who forgot password and are logged out).
+    """
+    success, message = await AuthService.reset_password_with_recovery(
+        db, request.email, request.recovery_code, request.new_password
     )
     
     if not success:
