@@ -340,8 +340,6 @@ class EnhancedGenerativeAIClient:
 
         try:
             # Format messages for google-genai
-            # Ensure "system" messages aren't rejected if unsupported by the specific API method
-            # Usually we can bundle system prompt into the first user message or use config
             contents = []
             system_instruction = ""
             for m in messages:
@@ -354,27 +352,11 @@ class EnhancedGenerativeAIClient:
                     contents.append({"role": "user", "parts": [{"text": m.get("content", "")}]})
             
             # Using new generate_content API with system instructions
-        # Format messages for google-genai
-        # Ensure "system" messages aren't rejected if unsupported by the specific API method
-        # Usually we can bundle system prompt into the first user message or use config
-        contents = []
-        system_instruction = ""
-        for m in messages:
-            role = m.get("role", "user")
-            if role == "system":
-                system_instruction += m.get("content", "") + "\n"
-            elif role == "assistant":
-                contents.append({"role": "model", "parts": [{"text": m.get("content", "")}]})
-            else:
-                contents.append({"role": "user", "parts": [{"text": m.get("content", "")}]})
-        
-        # Using new generate_content API with system instructions
-        from google.genai import types
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction.strip()
-        ) if system_instruction else None
+            from google.genai import types
+            config = types.GenerateContentConfig(
+                system_instruction=system_instruction.strip()
+            ) if system_instruction else None
 
-        try:
             response = await self._client.aio.models.generate_content(
                 model=self._model_name,
                 contents=contents,
