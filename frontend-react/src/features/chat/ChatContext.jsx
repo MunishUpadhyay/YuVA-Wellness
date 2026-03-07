@@ -26,6 +26,7 @@ export const ChatProvider = ({ children }) => {
     const [assessmentStep, setAssessmentStep] = useState(0);
     const [assessmentAnswers, setAssessmentAnswers] = useState({});
     const [assessmentCompleted, setAssessmentCompleted] = useState(false);
+    const [selectedModel, setSelectedModel] = useState('gemini-flash-latest');
 
     // Clear state on logout
     useEffect(() => {
@@ -61,6 +62,8 @@ export const ChatProvider = ({ children }) => {
         setAssessmentAnswers,
         assessmentCompleted,
         setAssessmentCompleted,
+        selectedModel,
+        setSelectedModel,
         clearChat
     };
 

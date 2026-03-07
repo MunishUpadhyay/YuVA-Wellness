@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     MessageCircle, ClipboardList, Send, RotateCcw, ArrowLeft, ArrowRight,
-    Smile, Zap, Activity, Moon, Heart, Leaf, Sun, Shield, Info, Check
+    Smile, Zap, Activity, Moon, Heart, Leaf, Sun, Shield, Info, Check,
+    ChevronDown, Cpu, Sparkles, Brain
 } from 'lucide-react';
 import ApiClient from '../../services/apiClient';
 import { API_ENDPOINTS } from '../../constants/api';
@@ -425,11 +426,23 @@ const OpenChat = () => {
         setChatInput: setInput,
         crisisDetected,
         setCrisisDetected,
-        clearChat
+        clearChat,
+        selectedModel,
+        setSelectedModel
     } = useChat();
 
     const [typing, setTyping] = useState(false);
+    const [showModels, setShowModels] = useState(false);
     const messagesEndRef = useRef(null);
+
+    const AVAILABLE_MODELS = [
+        { id: 'gemini-flash-latest', name: 'Gemini 1.5 Flash', icon: Zap, desc: 'Fast & Reliable', speed: '⚡⚡⚡', smarter: '🧠' },
+        { id: 'gemini-pro-latest', name: 'Gemini 1.5 Pro', icon: Sparkles, desc: 'Smarter & Detailed', speed: '⚡⚡', smarter: '🧠🧠🧠' },
+        { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Lite', icon: Cpu, desc: 'Ultra Efficient', speed: '⚡⚡⚡', smarter: '🧠🧠' },
+        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', icon: Brain, desc: 'High Performance', speed: '⚡⚡⚡', smarter: '🧠🧠🧠' }
+    ];
+
+    const currentModel = AVAILABLE_MODELS.find(m => m.id === selectedModel) || AVAILABLE_MODELS[0];
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -465,7 +478,10 @@ const OpenChat = () => {
         setTyping(true);
 
         try {
-            const result = await ApiClient.post('/api/ai/chat', { text: text });
+            const result = await ApiClient.post('/api/ai/chat', {
+                text: text,
+                model: selectedModel
+            });
 
             // Expected response format from backend: { reply: "...", type: "...", confidence: 0.9 }
             let replyText = "I'm listening. Please go on.";
@@ -508,6 +524,72 @@ const OpenChat = () => {
                         <span className="w-2 h-2 bg-emerald-400 rounded-full mr-1.5 animate-pulse"></span>
                         Online
                     </div>
+                </div>
+
+                {/* Model Selector */}
+                <div className="ml-auto relative">
+                    <button
+                        onClick={() => setShowModels(!showModels)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-slate-800/50 hover:bg-slate-700/80 rounded-full border border-white/5 transition-all group"
+                    >
+                        <currentModel.icon size={14} className="text-primary group-hover:scale-110 transition-transform" />
+                        <span className="text-[11px] font-medium text-slate-300">{currentModel.name}</span>
+                        <ChevronDown size={12} className={cn("text-slate-500 transition-transform", showModels && "rotate-180")} />
+                    </button>
+
+                    <AnimatePresence>
+                        {showModels && (
+                            <>
+                                <div
+                                    className="fixed inset-0 z-10"
+                                    onClick={() => setShowModels(false)}
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute right-0 mt-2 w-64 bg-slate-800 border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden"
+                                >
+                                    <div className="p-2 border-b border-white/5 bg-slate-900/50">
+                                        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500 px-2">Choose Intelligence</span>
+                                    </div>
+                                    <div className="p-1.5">
+                                        {AVAILABLE_MODELS.map(m => (
+                                            <button
+                                                key={m.id}
+                                                onClick={() => {
+                                                    setSelectedModel(m.id);
+                                                    setShowModels(false);
+                                                }}
+                                                className={cn(
+                                                    "w-full flex items-start gap-3 p-3 rounded-lg transition-all text-left group mb-1 last:mb-0",
+                                                    selectedModel === m.id ? "bg-primary/20 border-primary/20" : "hover:bg-white/5 border-transparent"
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    "p-2 rounded-lg shrink-0",
+                                                    selectedModel === m.id ? "bg-primary text-white" : "bg-slate-700 text-slate-400 group-hover:text-white"
+                                                )}>
+                                                    <m.icon size={18} />
+                                                </div>
+                                                <div className="flex-1 overflow-hidden">
+                                                    <div className="flex items-center justify-between mb-0.5">
+                                                        <span className={cn("text-sm font-semibold", selectedModel === m.id ? "text-white" : "text-slate-200")}>{m.name}</span>
+                                                        {selectedModel === m.id && <Check size={12} className="text-primary" />}
+                                                    </div>
+                                                    <div className="text-[10px] text-slate-400 mb-1">{m.desc}</div>
+                                                    <div className="flex items-center gap-3 text-[9px] uppercase tracking-tighter font-bold">
+                                                        <span className="flex items-center gap-1 text-slate-500">Speed <span className="text-emerald-400">{m.speed}</span></span>
+                                                        <span className="flex items-center gap-1 text-slate-500">IQ <span className="text-emerald-400">{m.smarter}</span></span>
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            </>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 

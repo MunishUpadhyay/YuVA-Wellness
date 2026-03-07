@@ -20,6 +20,7 @@ ai_client = EnhancedGenerativeAIClient()
 
 class ChatMessage(BaseModel):
     text: str
+    model: Optional[str] = None
 
 class ChatResponse(BaseModel):
     reply: str
@@ -107,7 +108,7 @@ async def chat_with_companion(
         # Format the message history for the LLM
         gemini_messages = [{"role": m.role, "content": m.content} for m in recent_history]
         
-        gemini_response_text = await ai_client.chat(gemini_messages)
+        gemini_response_text = await ai_client.chat(gemini_messages, model_override=message.model)
         
         # Save AI Reply
         ai_msg = Message(

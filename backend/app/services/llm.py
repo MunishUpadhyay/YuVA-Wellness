@@ -122,7 +122,7 @@ MENTAL_HEALTH_KNOWLEDGE = {
 }
 
 
-def _mock_model(messages: List[Dict[str, str]]) -> str:
+def _mock_model(messages: List[Dict[str, str]], model_name: str = "mock-model") -> str:
     user_msgs = [m.get("content", "") for m in messages if m.get("role") == "user"]
     system_msgs = [m.get("content", "") for m in messages if m.get("role") == "system"]
     last_user = (user_msgs[-1] if user_msgs else "").strip()
@@ -291,8 +291,8 @@ def _mock_model(messages: List[Dict[str, str]]) -> str:
     return random.choice(responses)
 
 
-async def _mock_model_stream(messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
-    full_response = _mock_model(messages)
+async def _mock_model_stream(messages: List[Dict[str, str]], model_name: str = "mock-model") -> AsyncGenerator[str, None]:
+    full_response = _mock_model(messages, model_name=model_name)
     words = full_response.split()
     
     for i, word in enumerate(words):
@@ -329,10 +329,11 @@ class EnhancedGenerativeAIClient:
             self.use_mock = True
             self._client = None
 
-    async def chat(self, user_messages: List[Dict[str, str]]) -> str:
+    async def chat(self, user_messages: List[Dict[str, str]], model_override: str | None = None) -> str:
+        model = model_override or self._model_name
         messages = [{"role": "system", "content": EMPATHETIC_SYSTEM_PROMPT}] + user_messages
         if self.use_mock:
-            return _mock_model(messages)
+            return _mock_model(messages, model_name=model)
 
         self._ensure_client()
         if self._client is None:
@@ -358,7 +359,7 @@ class EnhancedGenerativeAIClient:
             ) if system_instruction else None
 
             response = await self._client.aio.models.generate_content(
-                model=self._model_name,
+                model=model,
                 contents=contents,
                 config=config
             )
@@ -384,11 +385,12 @@ class EnhancedGenerativeAIClient:
                 
             return f"An error occurred connecting to the AI: {error_msg}. Please check if your API key is restricted or if the Generative Language API is enabled in your Google Cloud Console."
 
-    async def chat_stream(self, user_messages: List[Dict[str, str]]) -> AsyncGenerator[str, None]:
+    async def chat_stream(self, user_messages: List[Dict[str, str]], model_override: str | None = None) -> AsyncGenerator[str, None]:
+        model = model_override or self._model_name
         messages = [{"role": "system", "content": EMPATHETIC_SYSTEM_PROMPT}] + user_messages
         
         if self.use_mock:
-            async for chunk in _mock_model_stream(messages):
+            async for chunk in _mock_model_stream(messages, model_name=model):
                 yield chunk
             return
 
@@ -415,7 +417,7 @@ class EnhancedGenerativeAIClient:
 
         try:
             response_stream = await self._client.aio.models.generate_content_stream(
-                model=self._model_name,
+                model=model,
                 contents=contents,
                 config=config
             )
