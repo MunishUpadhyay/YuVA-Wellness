@@ -15,7 +15,7 @@
 
 ## 🔗 Live Experience
 🚀 **Frontend:** [yuva-wellness.vercel.app](https://yuva-wellness.vercel.app)  
-⚙️ **Backend API:** [yuva-wellness-gzhr.onrender.com](https://yuva-wellness-gzhr.onrender.com)
+⚙️ **Backend API:** [yuva-wellness-gzhr.onrender.com](https://yuva-backend-gzhr.onrender.com)
 
 ---
 
